@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Secrets & credentials
+.env
+.env.*
+!.env.example
+env/dashboard-gcloud.json
+env/*.json
+
+# Runtime artifacts
+logs/
+images/
+data/cache/
+*.log
+
+# OS
+.DS_Store

@@ -1,0 +1,17 @@
+[Unit]
+Description=SEO Agents (standalone) — write + publish articles scheduler
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/seo_agents
+ExecStart=/var/www/seo_agents/.venv/bin/python /var/www/seo_agents/scheduler.py --config crons.yaml
+Restart=always
+RestartSec=10
+# Logs go to the systemd journal (view with: journalctl --user -u seo_agents -f).
+# The tasks also write their own file at /var/www/seo_agents/logs/tasks.log.
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

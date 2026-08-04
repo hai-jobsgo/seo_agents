@@ -1,0 +1,1040 @@
+extract_outline_task:
+  description: >
+    Generate a comprehensive content outline for the article using its content and, if available, its table of contents.  
+    The outline should be hierarchical with proper markdown formatting for headings (using #, ##, ###, etc.).
+    
+    For each section and subsection:
+    1. Include the heading with appropriate markdown formatting
+    2. Add brief inline notes in [square brackets] immediately after complex or unique sections that require special handling
+    3. These notes should explain:
+       - How to approach technically complex concepts
+       - What specific examples or case studies to include
+       - Any unique formatting requirements (tables, code blocks, etc.)
+       - Key statistics or data points that must be incorporated
+       - Special stylistic considerations for that section
+    
+    IMPORTANT GUIDELINES:
+    - Ignore any unwanted content from other parts of the webpage (navigation bars, sidebars, footers, comments, etc.)
+    - Focus only on the main article's substantive content
+    - Identify and exclude any irrelevant sections not belonging to the actual article
+    - The entire outline, including ALL headings, notes, and guidance must be written in Vietnamese
+    - From H2 downward (H2, H3, H4, ...), write headings in normal Vietnamese sentence case - capitalize only the
+      first letter of the heading and any proper nouns. Do NOT capitalize every word (no Title Case).
+    - Do not embed a specific calendar year into any heading or note unless that section is inherently time-sensitive
+      (pricing, rankings, market data, current events). If a note references external research or statistics, tell
+      the writer to cite the source's own name/year rather than inventing or assuming a year.
+
+    Do not provide full content, only structured guidance. The outline should serve as a comprehensive blueprint that allows another AI to write the full article without needing to reference the original.
+
+    Table of contents (if available):
+    {toc}
+
+    Article content:
+    {content}
+  expected_output: >
+    A markdown-formatted outline in Vietnamese that accurately reflects the article's structure with inline writing guidance for complex sections.
+
+    Example format:
+    # Tiêu Đề Chính
+    ## Tiêu đề phụ 1
+    ### Tiêu đề phụ nhỏ A [Ghi chú: Giải thích khái niệm kỹ thuật này bằng cách sử dụng phép so sánh X; bao gồm công thức cho Y và trích dẫn nghiên cứu của Smith kèm tên nguồn/năm gốc của nghiên cứu đó]
+    ## Tiêu đề phụ 2 [Ghi chú: Tạo bảng so sánh thể hiện sự khác biệt giữa phương pháp A, B và C; nhấn mạnh các cân nhắc đạo đức]
+    
+    The outline should be detailed enough that a writer can understand how to approach each section without seeing the original article.
+  agent: content_analyzer
+  
+compare_improve_outline_task:
+  description: >
+    Analyze and enhance our existing outline against top 3 competitor outlines for the target keyword,
+    with the specific goal of improving SEO ranking while maintaining our NATCenter (auto parts / tires / car care) perspective.
+    
+    ANALYSIS PHASE:
+    * Systematically compare our outline with each competitor outline, section by section
+    * Identify valuable content sections, subsections, and approaches to incorporate
+    * Detect gaps in our current outline that should be addressed
+    * Evaluate heading hierarchy, structure, and information completeness
+    * Assess the existing inline notes from all outlines for valuable guidance
+    
+    ENHANCEMENT PHASE:
+    * PRIORITIZE MAINTAINING OUR EXISTING OUTLINE STRUCTURE whenever possible
+    * APPEND new sections or subsections to our existing structure rather than reorganizing
+    * Only replace our outline entirely if a competitor outline is significantly superior than ours
+    * Preserve our outline's existing core strengths and unique perspective
+    * Transfer and adapt relevant inline notes from the source outlines
+    * Ensure comprehensive coverage of automotive themes relevant to car owners and drivers (parts selection, maintenance, safety)
+    * REMOVE any prominent promotion of competitor brands - only NATCenter is allowed as a promoted brand reference
+    
+    NOTE HANDLING GUIDELINES:
+    * When incorporating a section from any outline (ours or competitors):
+      - Transfer any existing [NOTES: ] from that outline directly when they provide valuable guidance
+      - Adapt notes as needed to maintain our NATCenter perspective
+      - Consolidate overlapping notes from multiple sources when appropriate
+      - Ensure notes provide clear writing guidance for complex or unique sections
+    * Maintain consistent [NOTES: ] formatting throughout the combined outline
+    * Always include a FAQ section at the end of the outline with 2-4 relevant questions
+
+    IMPORTANT:
+    * The entire output outline, including ALL headings, sections, notes, and meta information must be written in Vietnamese.
+    * The outline MUST use a numbering system with main sections numbered as 1, 2, 3... and subsections as 1.1, 1.2, 1.3... etc.
+    * AVOID creating main sections (e.g., ## 1. Section) that contain only a single subsection (e.g., ### 1.1. Subsection). If a topic for a main section seems to only have one sub-point, consider if that sub-point can be elevated to a main section itself, or if its content can be merged into a related, broader section.
+    * The FAQ section itself should NOT have a section number, and its questions should use a separate numbering (1., 2., 3., etc.)
+    * From H2 downward (H2, H3, H4, ...), write headings in normal Vietnamese sentence case - capitalize only the
+      first letter of the heading and any proper nouns. Do NOT capitalize every word (no Title Case).
+    * Do not embed a specific calendar year into any heading or note unless that section is inherently time-sensitive
+      (pricing, rankings, market data, current events); for such sections, note that the writer should use the
+      actual current month/year at writing time rather than a fixed or guessed year.
+    * Minimize reorganization of our existing outline - focus on APPENDING new content rather than restructuring
+    * Only completely replace our outline if a competitor's outline is substantially better in covering search intent
+    * LENGTH GUIDANCE: {word_count_guidance} Size each section's [NOTES: ] with an approximate word-count budget so the
+      SUM of all section budgets lands close to the stated average (not the ceiling) - do NOT pad the outline with
+      extra sections/subsections just to make the article longer than competitors.
+
+    Keyword: {keyword}
+
+    Our current outline:  
+    {our_outline}  
+
+    Competitor 1 outline:  
+    {competitor_1_outline}  
+
+    Competitor 2 outline:  
+    {competitor_2_outline}  
+
+    Competitor 3 outline:  
+    {competitor_3_outline}  
+
+  expected_output: >
+    A comprehensive, enhanced outline in Vietnamese in markdown format that integrates the best elements from all source outlines, preferably by APPENDING to our existing outline structure rather than reorganizing it.
+    
+    Example format:
+    # Đề Cương SEO Nâng Cao: [Từ Khóa Chính]
+
+    ## 1. [Giữ nguyên tiêu đề phần 1 hiện tại, viết thường trừ chữ cái đầu] [GHI CHÚ: {ghi chú được chuyển từ đề cương nguồn nếu có}]
+    ### 1.1. [Giữ nguyên tiêu đề phụ hiện tại]
+    ### 1.2. [Giữ nguyên tiêu đề phụ hiện tại]
+    ### 1.3. [Tiêu đề phụ mới được thêm vào] [GHI CHÚ: {ghi chú mới}]
+
+    ## 2. [Giữ nguyên tiêu đề phần 2 hiện tại] [GHI CHÚ: {ghi chú được chuyển từ đề cương nguồn nếu có}]
+    ### 2.1. [Giữ nguyên tiêu đề phụ hiện tại]
+    ### 2.2. [Tiêu đề phụ mới được thêm vào] [GHI CHÚ: {ghi chú mới}]
+
+    ## 3. [Phần mới được thêm vào] [GHI CHÚ: {ghi chú mới}]
+
+    [Các phần bổ sung khác nếu phù hợp...]
+
+    ## Câu hỏi thường gặp (FAQ)
+    ### 1. [Câu hỏi 1]
+    ### 2. [Câu hỏi 2]
+    ### 3. [Câu hỏi 3]
+
+    All headings from H2 downward must use normal Vietnamese sentence case (capitalize only the first letter and
+    proper nouns, not every word). The enhanced outline should prioritize keeping our existing outline structure while APPENDING new valuable sections or subsections
+    identified from competitor outlines. Only in cases where a competitor's outline is substantially superior in addressing search intent 
+    should our outline be completely replaced. The resulting outline should be comprehensive, well-structured, and contain all necessary
+    guidance for content creation. All sections must follow the numerical hierarchy (1, 2, 3 for main sections and 1.1, 1.2, etc. 
+    for subsections), except for the FAQ section which should use a separate numbering format (1., 2., 3.) for questions and should not 
+    have a section number itself.
+  agent: content_outline_researcher
+
+follow_outline_task:
+  description: >
+    Enhance the suggested outline by gathering detailed notes and guidance for each section from competitor outlines or our outline,
+    while strictly maintaining the exact structure and headings of the suggested outline.
+
+    CRITICAL REQUIREMENTS:
+    * MAINTAIN the exact structure of the suggested outline - DO NOT add, remove, or reorder any sections
+    * MAINTAIN all existing headings exactly as provided in the suggested outline, EXCEPT normalize their
+      capitalization: from H2 downward, use normal Vietnamese sentence case (capitalize only the first letter and
+      proper nouns, not every word) - if the suggested outline has Title Case headings, lowercase them accordingly
+      without changing the wording
+    * Add proper numbering to all headings:
+      - H2 headings must be numbered: 1, 2, 3, 4, etc.
+      - H3 headings must be numbered: 1.1, 1.2, 2.1, 2.2, etc.
+      - H4 headings must be numbered: 1.1.1, 1.1.2, etc.
+    * ONLY add or enhance inline notes [GHI CHÚ: ] to provide writing guidance
+
+    ENHANCEMENT PROCESS:
+    For each section in the suggested outline:
+    1. Review the same or similar sections in all 4 reference outlines (Outline 1-4)
+    2. Extract valuable implementation details, examples, data points, or approaches
+    3. Add or enhance inline notes [GHI CHÚ: ] with specific guidance on:
+       - Technical concepts that need explanation
+       - Specific examples or case studies to include
+       - Data points or statistics to incorporate
+       - Formatting requirements (tables, lists, etc.)
+       - Writing style considerations
+    4. Ensure notes provide actionable guidance for content creation
+
+    NOTE ENHANCEMENT GUIDELINES:
+    * Transfer relevant notes from reference outlines (outline1-4) that match sections in the suggested outline
+    * Adapt and consolidate notes from multiple outlines when they cover the same section
+    * Add new notes based on valuable content patterns identified in the reference outlines
+    * Ensure all notes are written in Vietnamese
+    * Focus on making each section comprehensive and well-guided for the writer
+    * LENGTH GUIDANCE: {word_count_guidance} Size each section's word-count budget within the [GHI CHÚ: ] notes so the
+      SUM lands close to the stated average (not the ceiling) - do NOT inflate notes just to make the final article
+      longer than competitors.
+
+    IMPORTANT RESTRICTIONS:
+    * DO NOT change the suggested outline structure in any way
+    * DO NOT add new sections or subsections
+    * DO NOT remove or merge existing sections
+    * DO NOT change heading text or numbering
+    * ONLY enhance by adding/improving inline notes [GHI CHÚ: ]
+    * REMOVE any prominent promotion of competitor brands - only NATCenter is allowed as a promoted brand reference
+
+    Keyword: {keyword}
+
+    Suggested Outline (MUST FOLLOW EXACTLY):
+    {suggested_outline}
+
+    Outline 1 (for reference):
+    {our_outline}
+
+    Outline 2 (for reference):
+    {competitor_1_outline}
+
+    Outline 3 (for reference):
+    {competitor_2_outline}
+
+    Outline 4 (for reference):
+    {competitor_3_outline}
+
+  expected_output: >
+    The exact same outline structure as the suggested outline (WITHOUT the title), but with enhanced inline notes [GHI CHÚ: ]
+    that provide comprehensive writing guidance for each section.
+
+    FORMATTING REQUIREMENTS:
+    * Convert all heading levels to proper markdown format with numbering:
+      - H2 headings should use ## and be numbered 1, 2, 3, etc.
+      - H3 headings should use ### and be numbered 1.1, 1.2, 2.1, 2.2, etc.
+      - H4 headings should use #### and be numbered 1.1.1, 1.1.2, etc.
+    * DO NOT include the title (H1 or # heading) in the output
+    * Start directly with the first H2 section
+
+    Example format:
+    ## 1. [Exact section 1 heading from suggested outline] [GHI CHÚ: {enhanced note with details from reference outlines}]
+    ### 1.1. [Exact subsection heading from suggested outline] [GHI CHÚ: {specific implementation guidance}]
+    ### 1.2. [Exact subsection heading from suggested outline] [GHI CHÚ: {examples and data points to include}]
+
+    ## 2. [Exact section 2 heading from suggested outline] [GHI CHÚ: {enhanced note}]
+    ### 2.1. [Exact subsection heading from suggested outline]
+    ### 2.2. [Another subsection]
+
+    ## 3. [Exact section 3 heading from suggested outline]
+    ### 3.1. [Exact subsection heading]
+
+    [Continue with all sections exactly as in suggested outline...]
+
+    The output must preserve the exact structure and headings from the suggested outline (excluding the title)
+    while adding proper numbering (1, 2, 3 for H2; 1.1, 1.2 for H3; etc.) and valuable implementation notes
+    gathered from the reference outlines. All headings must use proper markdown formatting (##, ###, ####, etc.).
+    All content must be in Vietnamese.
+  agent: content_outline_researcher
+
+generate_outline_task:
+  description: >
+    Generate a comprehensive SEO-optimized article outline by strategically combining and enhancing elements from the top 3 competitors' content for the target keyword. The outline should specifically address the needs of car owners and drivers researching auto parts, tires, oil, and vehicle maintenance.
+
+    ANALYSIS PHASE:
+    For each competitor outline:
+    * Identify high-performing sections addressing primary user search intent
+    * Extract unique perspectives or angles exclusive to each competitor
+    * Note content gaps and underdeveloped areas with expansion potential
+    * Evaluate structural flow, readability, and information hierarchy
+    * Highlight practical, vehicle-maintenance-focused elements with particular relevance to target audience
+
+    SYNTHESIS PHASE:
+    Create a superior outline by:
+    * Arranging content to answer primary user questions early (featured snippet optimization)
+    * Incorporating all valuable sections from competitors while eliminating redundancies
+    * Including unique sections competitors have overlooked
+    * Organizing information in a logical progression that maintains reader engagement
+    * When incorporating a section from any competitor's outline:
+      - Transfer any existing [NOTES: ] from that outline directly when they provide valuable guidance
+      - Adapt notes as needed to maintain our NATCenter perspective
+      - Consolidate overlapping notes from multiple sources when appropriate
+      - Ensure notes provide clear writing guidance for complex or unique sections
+    * Maintain consistent [NOTES: ] formatting throughout the combined outline
+    * Ensuring comprehensive coverage of both everyday car owner and professional garage/mechanic perspectives where relevant
+    * REMOVE any prominent promotion of competitor brands - only NATCenter is allowed as a promoted brand reference
+    
+
+    OPTIMIZATION GUIDELINES:
+    * Include primary keyword and semantic variations in key headings
+    * Flag sections ideal for internal linking opportunities
+    * Suggest potential meta title and description formulations
+    * Always include a FAQ section at the end of the outline with 2-4 relevant questions
+
+    IMPORTANT:
+    * The entire output outline, including ALL headings, sections, notes, and meta information must be written in Vietnamese.
+    * The outline MUST use a numbering system with main sections numbered as 1, 2, 3... and subsections as 1.1, 1.2, 1.3... etc.
+    * AVOID creating main sections (e.g., ## 1. Section) that contain only a single subsection (e.g., ### 1.1. Subsection). If a topic for a main section seems to only have one sub-point, consider if that sub-point can be elevated to a main section itself, or if its content can be merged into a related, broader section.
+    * The FAQ section itself should NOT have a section number, and its questions should use a separate numbering (1., 2., 3., etc.)
+    * From H2 downward (H2, H3, H4, ...), write headings in normal Vietnamese sentence case - capitalize only the
+      first letter of the heading and any proper nouns. Do NOT capitalize every word (no Title Case).
+    * Do not embed a specific calendar year into any heading or note unless that section is inherently time-sensitive
+      (pricing, rankings, market data, current events); for such sections, note that the writer should use the
+      actual current month/year at writing time rather than a fixed or guessed year.
+    * LENGTH GUIDANCE: {word_count_guidance} Size each section's [NOTES: ] with an approximate word-count budget so the
+      SUM of all section budgets lands close to the stated average (not the ceiling) - do NOT pad the outline with
+      extra sections/subsections just to make the article longer than competitors.
+
+    Keyword: {keyword}
+
+    Competitor 1 outline:
+    {competitor_1_outline}
+
+    Competitor 2 outline:
+    {competitor_2_outline}
+
+    Competitor 3 outline:
+    {competitor_3_outline}
+
+  expected_output: >
+    A comprehensive SEO-optimized article outline in Vietnamese that strategically combines elements from all competitors.
+    
+    Example format in Vietnamese:
+    # Đề Cương Bài Viết Tối Ưu SEO: [Từ Khóa Chính] [Số từ mục tiêu: XXXX-XXXX từ]
+
+    ## 1. Giới thiệu [GHI CHÚ: Mở đầu với thống kê thuyết phục về nhu cầu thị trường việc làm; trả lời trực tiếp câu hỏi "X là gì" trong đoạn đầu tiên để nhắm đến đoạn trích nổi bật; 150-200 từ]
+
+    ## 2. [Phần chính 1] [GHI CHÚ: Bao gồm bảng so sánh thể hiện các lựa chọn X và Y cho người tìm việc; kết hợp số liệu thống kê từ (nguồn cụ thể nếu có); 400-500 từ]
+    ### 2.1. [Tiểu mục A] [GHI CHÚ: Tạo định dạng danh sách kiểm tra có thể thực hiện được; cơ hội cho đồ họa tùy chỉnh thể hiện quy trình]
+    ### 2.2. [Tiểu mục B] [GHI CHÚ: Bao gồm góc nhìn chuyên gia từ nhà quản lý tuyển dụng; tập trung vào giải quyết hiểu lầm phổ biến về X]
+
+    ## 3. [Phần chính 2] [GHI CHÚ: Cấu trúc như hướng dẫn từng bước; kết hợp H2 với từ khóa khớp chính xác cho truy vấn tìm kiếm "Làm thế nào để [từ khóa]"; 600-700 từ]
+    ### 3.1. [Tiểu mục A]
+    ### 3.2. [Tiểu mục B]
+
+    [Các phần bổ sung khác nếu phù hợp...]
+
+    ## 4. Kết luận [GHI CHÚ: Tóm tắt các điểm chính; bao gồm lời kêu gọi hành động cụ thể cho người tìm việc và nhà tuyển dụng; 3-4 câu ngắn gọn]
+
+    ## Câu hỏi thường gặp (FAQ)
+    ### 1. [Câu hỏi 1]
+    ### 2. [Câu hỏi 2]
+
+    All headings from H2 downward must use normal Vietnamese sentence case (capitalize only the first letter and
+    proper nouns, not every word). The outline should be a strategic blueprint that combines the strongest elements from competitor content while adding unique value and maintaining optimal structure for SEO performance. Each section should include specific guidance notes that enable a writer to create content superior to all existing competitors. All sections must follow the numerical hierarchy (1, 2, 3 for main sections and 1.1, 1.2, etc. for subsections), except for the FAQ section which should use a separate numbering format (1., 2., 3.) for questions and should not have a section number itself.
+  agent: content_outline_researcher
+
+improve_seo_elements_task:
+  description: >
+    Optimize the article's title, meta description, and H1 heading based on the content outline 
+    and analysis of the top 3 competitors for the given keyword.
+    
+    Learn from competitors' effective strategies while maintaining uniqueness, clarity, and SEO best practices.
+    The improved elements should be engaging, keyword-rich, and aligned with search intent.
+    
+    **Optimization Guidelines:**
+    - **Meta description length:** Keep between 140-160 characters (Google guidelines)
+    - **Title length:** Keep between 50-60 characters (Google guidelines)
+    - **For definition-based keywords ("X là gì")**, the meta description should start with a **concise one-sentence definition** before providing additional context.
+    - **Try to include the main keyword** early in the title, meta description, and H1 when appropriate
+    - **Incorporate authority signals** such as: Nhất, Báo cáo, Nghiên cứu, Chuyên gia, Số liệu, Thực tế, Khẳng định, Hướng dẫn, Bí quyết, Chi tiết, Từ A đến Z, Cách làm,
+    Cập nhật, Xu hướng, Mới nhất, Thay đổi, Cần làm ngay, Cảnh báo, Sai lầm, Tránh ngay, Vì sao, So sánh, Đánh giá, Tốt hơn, Hiệu quả hơn,
+    Bí mật, Làm thế nào, Đây là lý do, Tăng ngay, Nhanh chóng, etc. when appropriate
+    - **Add number references** (e.g., "3 cách để...") in the title when relevant to show completeness.
+
+    **Year/date usage in the title (read carefully):**
+    - Today's actual date is month {current_month}, year {current_year} - this is the ONLY month/year you may ever
+      use. Never invent, guess, or reuse a different year (e.g. do not write "2025" unless {current_year} is
+      literally 2025).
+    - Only put a month/year in the title if the keyword/outline is inherently TIME-SENSITIVE - i.e. its answer
+      genuinely changes over time and staleness would mislead the reader: pricing/bảng giá, rankings/"top",
+      promotions, market trends, statistics/reports, "mới nhất" type queries.
+    - For general, evergreen content - definitions ("X là gì"), how-to/hướng dẫn, concepts, tips that don't change -
+      do NOT add any month/year to the title at all, even though {current_month}/{current_year} are available. A
+      timeless title outperforms one that looks stale next year.
+    - When a year (or month + year) is warranted, use {current_year} (and {current_month} if the topic is monthly-
+      granular, e.g. price lists) exactly as given - never a different, hardcoded, or estimated year.
+
+    **Year/date usage in the meta description:**
+    - Avoid stating a specific month/year in the meta description whenever possible, even for time-sensitive topics -
+      keep the description itself timeless so it doesn't need to be rewritten every month/year. If freshness must be
+      signaled, prefer wording like "mới nhất", "cập nhật" over a literal date.
+
+    Keyword: {keyword}
+
+    Content outline:
+    {content_outline}
+
+    Our current title: {current_title}
+    Our current meta description: {current_meta_description}
+    Our current H1: {current_h1}
+    
+    Competitor 1:
+    - Title: {competitor_1_title}
+    - Meta Description: {competitor_1_meta_description}
+    - H1: {competitor_1_h1}
+    
+    Competitor 2:
+    - Title: {competitor_2_title}
+    - Meta Description: {competitor_2_meta_description}
+    - H1: {competitor_2_h1}
+    
+    Competitor 3:
+    - Title: {competitor_3_title}
+    - Meta Description: {competitor_3_meta_description}
+    - H1: {competitor_3_h1}
+
+  expected_output: >
+    An optimized title, meta description, and H1 heading in the following format:
+    
+    **Title:** [Optimized Title] (50-60 characters)
+    
+    **Meta Description:** [Optimized Meta Description] (140-160 characters)
+    
+    **H1:** [Optimized H1]
+    
+    The optimized elements should incorporate key takeaways from competitors while being original, engaging,
+    and aligned with the content outline. Ensure the main keyword is used effectively, and include authority words
+    and numbers when appropriate to enhance credibility and relevance. Only include a month/year in the title when
+    the topic is genuinely time-sensitive, and if so use the real current month/year provided - never a fabricated
+    or outdated one. Avoid stating a specific month/year in the meta description.
+
+  agent: seo_content_optimizer
+
+
+write_article_task:
+  description: >
+    Create a comprehensive, SEO-optimized article based on the provided content outline and any extra user requests (see `extra_request`).
+    Pay close attention to the inline notes in [brackets] within the outline, as they contain specific guidance
+    for writing complex or unique sections.
+
+    TARGET LENGTH (HARD LIMIT): {word_count_guidance}
+    This is a hard limit, not a floor. After drafting, COUNT the words in your draft; if it exceeds the limit, cut
+    redundant sentences, merge overlapping points, and tighten wording until it fits - do not submit an article
+    that overshoots this limit.
+
+    EXTRA REQUESTS:
+    * The `extra_request` input may contain additional user requirements or requests for the article (e.g., style, structure, specific content, or exclusions).
+    * Only fulfill these extra requests if doing so does NOT compromise the overall quality, coherence, or SEO value of the article.
+    * If an extra request would reduce the quality or effectiveness of the article, ignore it or address it only partially.
+    
+    CONTENT DEVELOPMENT APPROACH:
+    * If an original article is provided:
+      - Use it as a reference, selectively incorporating high-quality, relevant content
+      - Significantly improve upon weak sections identified in the outline
+      - Update any outdated information with current data and insights
+    * If no original article is provided:
+      - Develop the article entirely from the outline, following all section guidance
+    
+    WRITING STYLE REQUIREMENTS:
+    * Keep paragraphs SHORT: 2-4 sentences (roughly 2-4 lines) per paragraph. Break longer explanations into
+      multiple short paragraphs rather than one long block - this is a hard readability requirement, not a suggestion.
+    * Within each short paragraph, still use a clear topic sentence and connect ideas with natural transition words.
+    * Use formatting elements flexibly and purposefully, mixing them with short paragraphs rather than defaulting to
+      wall-of-text prose:
+      - Use **bold** to highlight key terms, numbers, or the main takeaway of a paragraph
+      - Use *italics* for emphasis, definitions, or secondary notes
+      - Use bullet lists for enumerations, feature lists, pros/cons, or step-by-step instructions - do NOT force
+        these into a single run-on paragraph
+      - Convert comparisons among several items/aspects into a well-structured table whenever appropriate
+    * Bullet items themselves should stay short (a phrase or one sentence each); if a "bullet" point actually needs
+      several sentences of explanation, that's a sign it should be its own short paragraph instead
+    * Write in an engaging, authoritative tone appropriate for car owners and drivers
+    * Address reader pain points and provide actionable solutions
+    * Incorporate real-world examples, case studies, and statistics as specified in the outline notes
+    * Elaborate on key concepts within the word-count budget for that section - depth means precision and useful
+      detail, not extra length; do not pad content just to sound more thorough
+
+    CREDIBILITY / SOURCING:
+    * Any statistic, data point, survey result, or direct quote MUST be attributed to a real, verifiable, credible
+      source named inline in the text (e.g., organization, publication, or study name, plus the source's own
+      publication year if relevant) - e.g. "theo báo cáo của Hiệp hội Các nhà sản xuất ô tô Việt Nam (VAMA, 2024)".
+    * NEVER fabricate a statistic, source, study, or quote. If the outline notes suggest a data point but no
+      verifiable source is available to you, either omit the specific number or phrase it qualitatively instead of
+      inventing a fake citation.
+    * A cited source's own year (e.g. the year a report was published) is independent from - and not restricted by -
+      the "when to use the current year" rule below; cite the source's real year as-is.
+
+    YEAR/DATE USAGE IN BODY CONTENT:
+    * Today's actual date is month {current_month}, year {current_year} - the only current month/year you may ever
+      use in the article. Never invent or reuse a different year (e.g. do not write "2025" unless {current_year} is
+      literally 2025).
+    * Only mention the current month/year when the specific sentence is inherently time-sensitive (prices, current
+      promotions, rankings, market data, "hiện nay"/"hiện tại" type statements). Do not sprinkle the year into
+      general definitions, explanations, or how-to content that doesn't need it.
+
+    STRUCTURAL CONSIDERATIONS:
+    * Follow the exact hierarchy of the provided outline (H1, H2, H3, etc.)
+    * From H2 downward (H2, H3, H4, ...), write headings in normal Vietnamese sentence case - capitalize only the
+      first letter of the heading and any proper nouns. Do NOT capitalize every word (no Title Case). This applies
+      even if the outline itself has Title Case headings - normalize them when writing.
+    * Implement any formatting instructions specified in the outline notes (tables, FAQs, etc.)
+    * Treat the word count target for each section (from the outline notes) and the overall TARGET LENGTH above as
+      hard limits, not minimums - do not pad sections to make the article longer than that target
+    * Create smooth transitions between major sections
+    * Keep introduction and conclusion sections brief and direct - no lengthy opening or closing
+    * For conclusion sections:
+      - Limit to 3-4 concise, impactful sentences
+      - Naturally incorporate the main keyword
+      - Include an internal link in Markdown format [anchor text](URL) to the following destination:
+        * https://natcenter.vn (use anchor text: "NATCenter")
+      - The link should read naturally, inviting the reader to explore NATCenter's products or services relevant to the article topic
+    * Position the FAQ section at the end of the article, after the Conclusion. There should be no more content after the FAQ section.
+    * FAQ answers should be concise, limited to 1-2 lines per question
+    * FAQ questions should:
+      - Address topics NOT already covered in the main sections or subsections
+      - Focus on related questions users might have that extend beyond the core content
+      - Provide additional value rather than repeating information already presented
+      - Target additional search queries related to the main keyword
+    
+    SEO OPTIMIZATION:
+    * Incorporate the target keyword naturally in:
+      - First 50 words of the introduction
+      - At least one H2 heading (preferably in the form of a question)
+    * Include semantic variations and related terms throughout the content
+    * Optimize for featured snippet potential by directly answering key questions
+    * Use descriptive alt text if suggesting images
+    
+    IMPORTANT RESTRICTIONS:
+    * DO NOT prominently promote any direct competitor brands (e.g. other tire/auto-parts retailers or manufacturers referenced in source material)
+    * Only NATCenter is allowed as a promoted brand reference in the content
+    * When discussing industry examples or comparisons, use generic terms like "một số đơn vị cung cấp phụ tùng khác" or "các cửa hàng lốp xe khác"
+    
+    IMPORTANT: The entire article must be written in Vietnamese in Markdown format, maintaining consistency with the outline.
+    
+    Content Outline:  
+    {content_outline}  
+
+    Target Keyword: {keyword}  
+    Suggested Title: {optimized_title}  
+    Suggested Meta Description: {optimized_description}  
+    Suggested H1: {optimized_h1}  
+    Extra Request (optional): {extra_request}
+
+    Original Article (optional):  
+    {original_article}
+
+  expected_output: >
+    A publication-ready article in Vietnamese in Markdown format that fully implements the provided outline structure, guidance notes, and any extra requests (if they do not reduce article quality). 
+    The content should demonstrate expertise on the topic while providing practical value to car owners
+    and drivers. The article should be comprehensive, engaging, and naturally optimized for search engines.
+    
+    The final article should include:
+    - The specified optimized H1 heading
+    - All section and subsection headings exactly as structured in the outline with the same numbering.
+    - Fully developed content for each section following the inline guidance notes
+    - Brief, direct introduction and conclusion sections (no lengthy opening or closing)
+    - Concise FAQ answers (1-2 lines per question)
+    - FAQ questions addressing topics not already covered in the main content
+    - Appropriate formatting elements as indicated in the outline
+    - Natural incorporation of the target keyword and semantic variations
+    - NO prominent promotion of competitor brands
+    - Total word count at or under the TARGET LENGTH (HARD LIMIT) stated in the task - verified by counting words
+      in the final draft, not estimated
+
+    The final article must NOT include table of content.
+    
+    The article should require minimal editing before publication and reflect best practices in both 
+    content development and SEO optimization.
+  
+  agent: seo_content_writer
+
+# generate_image_prompts_task:
+#   description: >
+#     Generate 2-4 high-quality image prompts based on the article content. These prompts will be used 
+#     to create visual elements that enhance understanding, break up text, and improve user engagement.
+    
+#     IMAGE PLANNING GUIDELINES:
+#     * Review the article to identify 2-4 strategic locations where images would add value:
+#       - Complex concepts that benefit from visual explanation
+#       - Key statistics or data that could be visualized
+#       - Step-by-step processes that would be clearer with visual aids
+#       - Important comparisons that could be illustrated
+    
+#     * For each identified location:
+#       1. Note the exact section where the image should appear (use heading number)
+#       2. Create a detailed image generation prompt (150-250 words) that describes:
+#          - The exact visual elements to include
+#          - The style and mood of the image (professional, friendly, data-focused, etc.)
+#          - Color preferences (if relevant)
+#          - Avoid long text elements, only allow short texts.
+#          - Any cultural or regional elements specific to Vietnamese audience
+#       3. Write a brief, descriptive alt text in Vietnamese (10-15 words)
+#       4. Suggest an appropriate image caption in Vietnamese (1 sentence)
+#       5. Generate a file name based on the keyword with increasing index (e.g., keyword_1.jpg, keyword_2.jpg)
+    
+#     * Ensure the image concepts:
+#       - Are directly relevant to the surrounding content
+#       - Enhance rather than merely decorate the text
+#       - Would be clear and understandable when viewed on mobile devices
+#       - Follow a consistent visual style throughout the article
+#       - Are appropriate for a car-owner / automotive context
+    
+#     * Distribution guidelines:
+#       - Place first image within the first 25% of the article
+#       - Space remaining images evenly throughout content
+#       - Avoid placing images in the FAQ section
+    
+#     * Image types to suggest:
+#       - Informational graphics (charts, diagrams, flowcharts)
+#       - Conceptual illustrations (metaphorical representations)
+#       - Process visualizations (step-by-step diagrams)
+#       - Comparison visuals (side-by-side illustrations)
+#       - Avoid photos with long texts
+    
+#     IMPORTANT: All image captions and alt text must be in Vietnamese to maintain language consistency.
+    
+#     Article Content:  
+#     {article_content}  
+    
+#     Target Keyword: {keyword}
+
+  # expected_output: >
+  #   A structured list of 2-4 image generation prompts in the following format:
+    
+  #   ## Image 1
+    
+  #   **Section Placement:** [Section number and heading]
+    
+  #   **Image Generation Prompt:** [Detailed description for AI image generation - 150-250 words in English]
+    
+  #   **Alt Text (Vietnamese):** [Brief descriptive text]
+    
+  #   **Caption (Vietnamese):** [1-2 sentence caption]
+    
+  #   **File Name:** [keyword_1.jpg]
+    
+  #   ---
+    
+  #   ## Image 2
+    
+  #   **Section Placement:** [Section number and heading]
+    
+  #   **Image Generation Prompt:** [Detailed description for AI image generation - 150-250 words in English]
+    
+  #   **Alt Text (Vietnamese):** [Brief descriptive text]
+    
+  #   **Caption (Vietnamese):** [1-2 sentence caption]
+    
+  #   **File Name:** [keyword_2.jpg]
+    
+  #   [Continue for each additional image]
+    
+  #   The prompts should be detailed enough for a text-to-image AI to generate high-quality, relevant visuals 
+  #   that enhance the article's value and engagement.
+    
+  # agent: content_visualizer
+
+# review_article_task:
+#   description: >
+#     Provide a focused SEO review of the article, identifying only the most impactful quick-win opportunities 
+#     for enhancement. The article should already be well-optimized, so concentrate on final polishing touches 
+#     rather than major restructuring.
+    
+#     QUICK-WIN FOCUS AREAS:
+#     1. KEYWORD OPTIMIZATION
+#         * Identify 2-3 specific places where primary or semantic keyword usage could be improved
+#         * Suggest simple keyword placement adjustments without changing article structure
+    
+#     2. FEATURED SNIPPET OPPORTUNITIES
+#         * Identify 1-2 sections that could be better formatted to target featured snippets
+#         * DO NOT suggest reformatting FAQ sections as tables
+    
+#     3. CONTENT ENHANCEMENTS
+#         * Recommend 1-3 specific data points, statistics, or examples to strengthen existing points. Only use specific data points with valid sources and and specific numbers, not vague examples or placeholder numbers.
+#         * Highlight any single weak section that could benefit from minor expansion (100-150 words)
+#         * Identify bullet-pointed sections that could be converted into well-developed paragraphs (especially if each bullet point has only one or two sentences)
+#         * Ensure any year references in content are updated to the current year (2025) to reflect up-to-date information
+    
+#     4. READABILITY IMPROVEMENTS
+#         * Suggest 2-3 opportunities for using bolding or other formatting elements
+#         * Recommend converting brief, disconnected bullet points into cohesive paragraphs with transition phrases
+#         * Identify opportunities to convert comparison sections into well-structured tables (except for FAQ sections)
+#         * Recommend at least one table conversion if the article doesn't already contain tables
+    
+#     5. CREDIBILITY IMPROVEMENTS
+#         * Flag any sentences that contain exaggerated claims without substantiated evidence
+#         * Suggest ways to rephrase these sentences or recommend adding supporting data/examples
+#         * Ensure all statistics, research citations, and dated information reference the current year (2025) where appropriate
+    
+#     6. NATURAL LANGUAGE ENHANCEMENT
+#         * Suggest 2-3 specific places where more conversational language could be used
+#         * Recommend replacing formal/robotic phrases with more natural/human-like expressions
+#         * Identify opportunities to add natural connecting phrases for smoother readability
+    
+#     FEEDBACK GUIDELINES:
+#     * Be extremely selective - focus only on changes with high SEO impact and low implementation effort
+#     * Provide specific, actionable suggestions rather than general observations
+#     * Keep feedback concise and implementation-focused
+#     * Assume the article is already well-structured and optimized in most aspects
+#     * When you see short bullet points, suggest converting them into fluid paragraphs for better readability
+#     * Check for outdated year references and suggest updating them to 2025 to maintain content freshness
+#     * Look for opportunities to make the writing sound more natural and human
+    
+#     IMPORTANT: Write all feedback in Vietnamese to ensure consistency for the content creator.
+
+#     Keyword: {keyword}
+    
+#     Article Content:
+#     {article_content}
+
+#   expected_output: >
+#     A concise, action-oriented list of specific improvements in Vietnamese that can be quickly implemented 
+#     to enhance the article's SEO performance.
+    
+#     Example format (in Vietnamese):
+#     ## Các đề xuất cải thiện nhanh
+    
+#     ### Tối ưu từ khóa
+#     * [1-2 đề xuất cụ thể với vị trí chính xác]
+    
+#     ### Cơ hội đoạn trích nổi bật
+#     * [1-2 đề xuất cụ thể với vị trí chính xác]
+    
+#     ### Tăng cường nội dung
+#     * [2-3 đề xuất cụ thể về dữ liệu/thống kê cần bổ sung]
+#     * [Cập nhật các tham chiếu về năm thành 2025]
+    
+#     ### Cải thiện khả năng đọc
+#     * [2-3 đề xuất định dạng cụ thể]
+#     * [Đề xuất chuyển đổi các phần so sánh thành bảng với tiêu đề rõ ràng]
+    
+#     ### Làm cho bài viết tự nhiên hơn
+#     * [3-5 đề xuất thay thế cụm từ chính thức bằng ngôn ngữ tự nhiên hơn]
+#     * [Đề xuất thêm các cụm từ kết nối tự nhiên]
+    
+#     The feedback should be actionable, specific, and focused only on quick improvements with high SEO impact.
+#   agent: seo_content_reviewer
+
+review_article_task:
+  description: >
+    Provide a focused SEO review of the article by analyzing it SECTION BY SECTION, identifying only the most impactful quick-win opportunities 
+    for enhancement. The article should already be well-optimized, so concentrate on final polishing touches 
+    rather than major restructuring.
+    
+    PROCESS FOR REVIEW:
+    1. First identify all major sections and subsections in the article
+    2. Review each section carefully, but only provide feedback for sections that can be improved. Skip sections that are already good.
+    3. For each section needing improvement, provide specific recommendations using the "Section Improvement Checklist" below.
+    4. For each suggestion, specify exactly which section, paragraph and sentence it applies to
+    
+    SECTION IMPROVEMENT CHECKLIST:
+    1. KEYWORD OPTIMIZATION
+        * Within each section, check for opportunities to better integrate primary or semantic keywords
+        * Suggest simple keyword placement adjustments without changing the section structure
+    
+    2. FEATURED SNIPPET OPPORTUNITIES
+        * Identify if the section could be better formatted to target featured snippets
+        * DO NOT suggest reformatting FAQ sections as tables
+    
+    3. CONTENT ENHANCEMENT FOR THE SECTION
+        * If a section lacks data points, suggest 1-2 specific statistics or examples to strengthen it if appropriate, and only 
+        if you can suggest specific data with valid sources, not vague examples.
+        * Convert bullet points with short sentences within a section into well-developed paragraphs.
+        * Update any outdated year references in the section to 2025 if appropriate.
+    
+    4. SECTION READABILITY
+        * Suggest specific bolding or formatting opportunities within the section
+        * Recommend converting disconnected bullet points into cohesive paragraphs with transition phrases
+        * If the section contains comparisons, suggest converting them to a well-structured table (except for FAQ sections)
+    
+    5. SECTION CREDIBILITY
+        * Flag exaggerated claims within the section that lack substantiated evidence
+        * Flag any hallucinations (made-up references, fake people, statistics) within the section.
+        * Suggest rephrasing or adding supporting data to strengthen credibility
+        * Ensure statistics and dated information within the section reference current year (2025) where appropriate
+    
+    6. NATURAL LANGUAGE IN THE SECTION
+        * Identify specific formal/robotic phrases within the section and suggest more conversational alternatives
+        * Recommend adding natural connecting phrases between paragraphs or ideas within the section
+        * Identify repeated phrases within the section and suggest alternatives.
+    
+    7. SECTION QUALITY CHECKS (Required)
+        * For FAQ section, check if questions repeat information already covered elsewhere
+        
+    
+    FEEDBACK GUIDELINES:
+    * Focus ONLY on sections needing improvement - skip sections that are already good enough
+    * Be extremely selective - focus only on changes with high SEO impact and low implementation effort
+    * Provide specific, actionable suggestions with exact locations (section, paragraph, sentence)
+    * Keep feedback concise and implementation-focused
+    * Assume most sections are already well-structured and only need minor optimizations
+    * For short bullet points, suggest converting them to fluid paragraphs for better readability
+    * Check for outdated year references and suggest updating them to 2025
+    * Look for opportunities to make the writing sound more natural and conversational
+    
+    IMPORTANT: Write all feedback in Vietnamese to ensure consistency for the content creator.
+
+    Keyword: {keyword}
+    
+    Article Content:
+    {article_content}
+
+  expected_output: >
+    A focused review in Vietnamese that provides actionable improvements for only the sections needing enhancement.
+    
+    Example format (in Vietnamese):
+    ## Đề xuất cải thiện
+
+    ### [Tên phần 1 cần cải thiện]
+    * Gợi ý cải thiện 1 & tham chiếu đến nội dung gốc (đoạn, câu) nếu phù hợp.
+    * Gợi ý cải thiện 2 & tham chiếu đến nội dung gốc (đoạn, câu) nếu phù hợp.
+    * Gợi ý cải thiện 3 & tham chiếu đến nội dung gốc (đoạn, câu) nếu phù hợp.
+    
+    ### [Tên phần 2 cần cải thiện]
+    * Gợi ý cải thiện 1 & tham chiếu đến nội dung gốc (đoạn, câu) nếu phù hợp.
+    * Gợi ý cải thiện 2 & tham chiếu đến nội dung gốc (đoạn, câu) nếu phù hợp.
+
+    
+    ### [Phần FAQ - nếu cần]
+    * Câu hỏi trùng lặp: [Liệt kê các câu hỏi FAQ trùng lặp với nội dung chính và đề xuất cách xử lý]
+    * Đề xuất cải thiện: [Cách làm cho FAQ phù hợp hơn với nội dung của bài]
+
+    Đối với mỗi gợi ý, hãy cung cấp vị trí chính xác (đoạn, câu) và đề xuất cụ thể để cải thiện. Tất cả phản hồi phải ngắn gọn, cụ thể và tập trung vào các cải tiến có tác động SEO cao.
+  agent: seo_content_reviewer
+  
+rewrite_article_task:
+  description: >
+    Update and improve the article based on SEO feedback while maintaining the core message and expertise. 
+    The goal is to create an enhanced version that better aligns with search intent, improves ranking potential, 
+    and provides more value to the target audience of car owners and drivers.
+    
+    UPDATING GUIDELINES:
+    
+    1. CONTENT IMPROVEMENTS
+      * Address all identified content gaps from the feedback
+      * Enhance sections flagged as needing more depth or detail
+      * Maintain the article's core expertise and value proposition
+      * Ensure comprehensive coverage of the topic that satisfies search intent
+    
+    2. STRUCTURE ENHANCEMENTS
+      * Implement suggested improvements to headings and content organization
+      * Prioritize key information according to user importance
+      * Improve the logical flow between sections
+      * Enhance scannability with appropriate formatting elements
+    
+    3. SEO OPTIMIZATION
+      * Incorporate keyword optimization suggestions
+      * Add or modify content to target featured snippet opportunities
+      * Implement recommended semantic keywords naturally throughout
+      * Optimize introduction for engagement and keyword placement
+      * Improve headings for both SEO and user engagement
+    
+    
+    4. USER EXPERIENCE FOCUS
+      * Make content more engaging and valuable to target audiences
+      * Ensure car owners and drivers find relevant, practical information
+      * Enhance readability through improved paragraph structure
+      * Maintain a authoritative yet accessible tone throughout
+    
+    IMPLEMENTATION APPROACH:
+      * DO NOT rewrite any sentences from the original article unless specifically mentioned in the feedback
+      * Keep the original numbering system for headings and subheadings
+      * Only modify content explicitly flagged in the SEO feedback
+      * Add new content only where gaps are identified
+      * Preserve the original wording, expertise and key points wherever possible
+      * Ensure all formatting follows proper markdown syntax
+      * The output must be in complete markdown format ready for publishing
+    
+    IMPORTANT: The entire rewritten article must be in Vietnamese, maintaining consistency with the original content and maintaining the numbering system for headings and subheadings.
+
+    Original Article:
+    {original_article}
+    
+    SEO Review Feedback:
+    {seo_feedback}
+    
+    Target Keyword: {keyword}
+
+
+  expected_output: >
+    A comprehensive, publication-ready article in Vietnamese in proper markdown format that implements only the SEO feedback 
+    while preserving the original content wherever possible.
+    
+    
+    The rewritten article should:
+    - Preserve all original sentences unless specifically mentioned in the feedback
+    - Only modify content explicitly flagged for improvement in the feedback
+    - Add new content only where gaps are identified
+    - Maintain the original article's purpose, wording, and expertise
+    - Incorporate all high-priority SEO improvements mentioned in the feedback
+    - Use proper markdown formatting for headings, lists, emphasis, etc.
+    - Be ready for direct publication without further formatting or editing
+    
+    The final article should address all feedback points while minimizing changes to the original content.
+  agent: seo_content_rewriter
+
+trim_article_task:
+  description: >
+    The article below is longer than its target length. Condense it so the total word count comes down to
+    approximately {target_word_count} words or fewer, while preserving all headings/subheadings (with their exact
+    numbering), the FAQ section, tables, and all key factual information.
+
+    HOW TO CONDENSE:
+    * Remove redundant sentences that repeat a point already made elsewhere in the same section
+    * Merge overlapping ideas into a single, tighter sentence
+    * Cut filler phrases, throat-clearing, and overly long transitions
+    * Shorten verbose explanations to their essential point, without losing accuracy
+    * Do NOT remove entire sections, headings, the FAQ section, or tables - condense their prose, don't delete structure
+    * Do NOT remove the internal link to https://natcenter.vn in the conclusion
+    * Keep the article's core facts, examples, and statistics intact
+
+    IMPORTANT: The output must remain entirely in Vietnamese, in Markdown format, with the same heading structure
+    and numbering as the original article.
+
+    Target Keyword: {keyword}
+    Target word count: {target_word_count} words or fewer
+
+    Original Article:
+    {original_article}
+
+  expected_output: >
+    A condensed version of the article in Vietnamese Markdown, at or under the target word count, with the same
+    heading structure/numbering, FAQ section, and tables preserved, and no loss of key factual content.
+  agent: seo_content_rewriter
+
+generate_image_prompts_task:
+  description: >
+    Generate 3 high-quality image prompts based on the keyword. These prompts will be used 
+    to create visual elements that enhance understanding, break up text, and improve user engagement.
+
+    IMAGE PLANNING GUIDELINES:
+    * Create 3 distinct image concepts that reflect different aspects of the keyword:
+      - One realistic stock photo representing the main idea
+      - One professional photography showing practical application or implementation
+      - One real-world scenario showing context or relationships
+    
+    * For each image:
+      1. Create a detailed image generation prompt (150-250 words) that describes:
+         - The exact visual elements to include (realistic style, not illustration or sketches or diagrams)
+         - The style and mood of the image (maintain consistency across all three)
+         - Color preferences (use a consistent palette across all images)
+         - Avoid any text elements or graphs in the images
+         - Any cultural or regional elements specific to Vietnamese audience
+      2. Write a brief, descriptive alt text in Vietnamese (10-15 words)
+      3. Suggest an appropriate image caption in Vietnamese (1 sentence)
+      4. Generate a file name based on the keyword with increasing index (e.g., keyword_1.jpg, keyword_2.jpg, keyword_3.jpg)
+      5. Specify the exact section name from the article where this image would be most effective
+    
+    * Image placement guidelines:
+      - Place the first image in either the first or second section of the article
+      - Distribute the remaining two images in different sections throughout the article
+      - Space images evenly to maintain reader engagement throughout
+    
+    * Ensure the image concepts:
+      - Use realistic photography (no illustration or sketches or diagrams)
+      - Maintain professional, high-quality visual standards
+      - Would be clear and understandable when viewed on mobile devices
+      - Are appropriate for a car-owner / automotive context
+    
+    * Image design considerations:
+      - Use natural, realistic lighting and environments
+      - Focus on clear, high-resolution visual elements
+      - Balance simplicity with informational value
+      - Design with both light and dark mode compatibility in mind
+      - Use purely visual elements without text overlays or graphs
+    
+    IMPORTANT: All image captions and alt text must be in Vietnamese to maintain language consistency.
+    
+    Target Keyword: {keyword}
+    Article: {article}
+  expected_output: >
+    Three detailed image prompt descriptions that can be used for image generation, formatted as:
+
+    ## Image 1
+
+    **Section Placement:** [Exact section name from article - first or second section]
+
+    **Image Generation Prompt:** [Detailed 150-250 word description for photorealistic stock photo]
+
+    **Alt Text (Vietnamese):** [10-15 word description in Vietnamese]
+
+    **Caption (Vietnamese):** [1 sentence caption in Vietnamese]
+
+    **File Name:** {keyword}_1.jpg
+
+    ---
+
+    ## Image 2
+
+    **Section Placement:** [Exact section name from article - different from Image 1]
+
+    **Image Generation Prompt:** [Detailed 150-250 word description for professional photography]
+
+    **Alt Text (Vietnamese):** [10-15 word description in Vietnamese]
+
+    **Caption (Vietnamese):** [1 sentence caption in Vietnamese]
+
+    **File Name:** {keyword}_2.jpg
+
+    ---
+
+    ## Image 3
+
+    **Section Placement:** [Exact section name from article - different from Images 1 and 2]
+
+    **Image Generation Prompt:** [Detailed 150-250 word description for real-world scenario photo]
+
+    **Alt Text (Vietnamese):** [10-15 word description in Vietnamese]
+
+    **Caption (Vietnamese):** [1 sentence caption in Vietnamese]
+
+    **File Name:** {keyword}_3.jpg
+  agent: content_visualizer
+
+
+insert_internal_link_task:
+  description: >
+    Insert a contextually relevant internal link into the provided content segment using the specified keyword and target URL.
+    
+    ANALYSIS PHASE:
+    * Carefully read and understand the content segment
+    * Identify the most relevant part of the segment where the keyword and link would fit naturally
+    * Determine if the keyword already exists in the content or needs to be added
+    * Assess if the link can be inserted by modifying an existing sentence or if a new sentence is needed
+    
+    IMPLEMENTATION GUIDELINES:
+    * PRIORITY 1: Modify an existing sentence to incorporate the keyword and link if possible
+      - Look for sentences that already mention the keyword or closely related concepts
+      - Make minimal changes to maintain the original tone and flow
+      - Ensure the modification sounds natural and adds value
+    
+    * PRIORITY 2: Add a new sentence that incorporates the keyword and link
+      - The new sentence should flow naturally from the surrounding content
+      - Position it where it makes the most logical sense (usually after a related point)
+      - Ensure it adds value by expanding on or supporting an existing point
+      - Keep the addition concise (1-2 sentences maximum)
+    
+    * PRIORITY 3 (LAST RESORT): Add a "Xem thêm" (Read more) reference at the end of the segment
+      - Only use this approach if the other methods would be forced or unnatural
+      - Format as: "Xem thêm: [keyword](target_url)"
+      - Only use this as a last resort when inline insertion is not feasible
+    
+    HTML FORMATTING REQUIREMENTS:
+    * Format the link using HTML anchor tags: <a href="target_url">keyword</a>
+    * Do not use markdown formatting
+    * Ensure proper HTML syntax with quotes around the href attribute
+    
+    IMPORTANT CONSIDERATIONS:
+    * Maintain the original Vietnamese language style and tone
+    * Ensure the link placement feels natural and helpful, not forced
+    * The link should provide genuine value to readers interested in the topic
+    * Avoid disrupting the flow of information or creating awkward phrasing
+    * Do not change the meaning or intent of the original content
+    
+    Content Segment: {segment}
+    Keyword to Link: {keyword}
+    Target URL: {target_url}
+
+  expected_output: >
+    Return a structured output with two fields:
+    
+    1. approach: The approach used (one of: "Modified existing sentence", "Added new sentence", or "Added Xem thêm reference")
+    2. modified_content: The complete segment with the internal link naturally incorporated. The link must be formatted using HTML anchor tags (<a href="target_url">keyword</a>).
+    
+    Example structured output:
+    ```json
+    {
+      "approach": "Modified existing sentence",
+      "modified_content": "<p>This is the modified content with <a href='https://example.com'>keyword</a> inserted naturally.</p>"
+    }
+    ```
+    
+    The output must be properly structured as a valid JSON object with these two fields.
+
+  agent: link_inserter

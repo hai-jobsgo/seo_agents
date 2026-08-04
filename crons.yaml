@@ -1,0 +1,20 @@
+# Scheduled jobs for the standalone seo_agents service.
+# Only the two content tasks: write articles (Sheet -> Google Doc) and
+# publish articles (Google Doc -> WordPress). gen_links is intentionally
+# omitted (it depends on the jg_agents DB/models).
+jobs:
+  - id: "write_articles_task"
+    func: "seo_agents.write_articles:write_articles_task"  # module:function
+    trigger: "interval"
+    minutes: 6
+    max_instances: 1
+    coalesce: True
+    start_now: True
+
+  - id: "publish_article_task"
+    func: "seo_agents.publish_articles:publish_article_task"  # module:function
+    trigger: "interval"
+    minutes: 7
+    max_instances: 1
+    misfire_grace_time: 60
+    coalesce: True
