@@ -133,22 +133,22 @@ class PublishCommand:
         
         # Read all rows from the first worksheet starting at row 2
         print('[publish_articles] getting cells...')
-        rows = ws1.get("A2:O2000")  # only columns A–O, rows 2–1000
+        rows = ws1.get("A2:P2000")  # only columns A–P, rows 2–1000
 
         print('[publish_articles] rows count: ', len(rows))
         found_publish = False
 
         for row in rows:
             try:
-                if len(row) < 9:  # Ensure row has enough columns
+                if len(row) < 10:  # Ensure row has enough columns
                     continue
 
                 keyword = row[0]
                 wp_target_url = row[1]  # URL in WordPress where to publish
-                status = row[6]
-                doc_url = row[8] if len(row) > 8 else None
-                tag = row[14] if len(row) > 14 else None
-                category = row[12] if len(row) > 12 else None
+                status = row[7]
+                doc_url = row[9] if len(row) > 9 else None
+                tag = row[15] if len(row) > 15 else None
+                category = row[13] if len(row) > 13 else None
                 
                 if not keyword:  # No more keywords
                     print('[publish_articles] no more keyword')
@@ -166,7 +166,7 @@ class PublishCommand:
                 row_index = rows.index(row) + 2  # +2 because sheet is 1-indexed and we skipped header
                 
                 # Update status to 'Processing'
-                ws1.update_cell(row_index, 7, "Processing")
+                ws1.update_cell(row_index, 8, "Processing")
                 time.sleep(1)  # Avoid API rate limits
 
                 # Publish to WordPress
@@ -174,7 +174,7 @@ class PublishCommand:
 
                 # Update status based on result
                 new_status = "Done" if success else "Failed"
-                ws1.update_cell(row_index, 7, new_status)
+                ws1.update_cell(row_index, 8, new_status)
 
                 # If successful, update the target URL cell if it was empty
                 if success and (not wp_target_url or wp_target_url == ""):

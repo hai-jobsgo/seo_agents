@@ -93,23 +93,22 @@ All site-specific values are env vars (see `.env.example`). The important ones:
 
 ## The control sheet ("SEO Flow")
 
-`Sheet1` is the queue. Columns the code reads (0-indexed → A,B,…):
+`Sheet1` is the queue. Current real columns on the live sheet (0-indexed → A,B,…):
 
 | Col | Field | Used by |
 |---|---|---|
 | A | keyword (also the per-keyword worksheet name) | both |
 | B | WordPress target URL (blank = create new post) | publish |
 | C–E | competitor URLs (3) | write |
-| F | **Reference URL** — authoritative source (manufacturer spec page, price list, etc.) scraped for exact product data/specs to ground the article in | write |
-| G | **status**: `Write` → `Processing` → `Review` → `Publish` → `Done`/`Failed` | both |
-| H | link to the per-keyword worksheet (auto) | write |
-| I | Google Doc URL (auto) | both |
-| J | sub-keywords | write |
-| K | suggested outline | write |
-| M | category (WordPress category name, resolved to an ID at publish time) | publish |
-| O | tag | publish |
+| F | **Reference URL** — authoritative source (manufacturer spec page, price list, etc.) scraped once and fed to the outline tasks as the ground truth for exact product data/specs | write |
+| G | **Target Length** — target word count for the article; if blank, falls back to the word-count-based rule derived from the competitor URLs (C–E) instead of a fixed number | write |
+| H | **status**: `Write` → `Processing` → `Review` → `Publish` → `Done`/`Failed` | both |
+| I | link to the per-keyword worksheet (auto) | write |
+| J | Google Doc URL (auto) | both |
 
-Column L is an unused gap between the outline columns and M/N.
+The code also defensively reads a few further columns if present (`len(row) > N` guarded, so they're optional and
+safe to leave off the sheet): K = sub-keywords, L = suggested outline, N = category (WP category name, resolved to
+an ID at publish time), P = tag. None of these exist on the current "NAT Blogs" sheet.
 
 Flow: set a row to `Write` → `write_articles_task` produces the article + Google Doc and
 flips it to `Review` → a human reviews the Doc → set it to `Publish` → `publish_article_task`

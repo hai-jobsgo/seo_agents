@@ -40,6 +40,16 @@ from seo_agents.task_logger import task_logger
 # Base directory (project root — one level above the seo_agents package)
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
+
+def parse_target_length(value):
+    """Parse the "Target Length" sheet cell into an int, or None if blank/invalid
+    (ArticleWriter falls back to the competitor-word-count-based rule when None)."""
+    try:
+        return int(str(value).strip()) if value else None
+    except (TypeError, ValueError):
+        return None
+
+
 class Command:
     def __init__(self):
         self.use_cache = True
@@ -75,11 +85,12 @@ class Command:
         return sh, worksheets
 
     def read_spreadsheet(self, ws):
-        row_values = ws.get("A1:F1")[0]
+        row_values = ws.get("A1:G1")[0]
         keyword = row_values[0]
         urls = row_values[1:5]
         reference_url = row_values[5] if len(row_values) > 5 else ''
-        return keyword, urls, reference_url
+        target_length = parse_target_length(row_values[6] if len(row_values) > 6 else '')
+        return keyword, urls, reference_url, target_length
 
     async def scan_spreadsheet(self):
         sh, worksheets = self.prepare_worksheets()
@@ -96,11 +107,12 @@ class Command:
                 keyword = row[0]
                 urls = row[1:5]
                 reference_url = row[5] if len(row) > 5 else ''
-                status = row[6]
-                link = row[7]
-                doc_url = row[8] if len(row) > 8 else None
-                sub_keywords = row[9] if len(row) > 9 else ''
-                suggested_outline = row[10] if len(row) > 10 else ''
+                target_length = parse_target_length(row[6] if len(row) > 6 else '')
+                status = row[7]
+                link = row[8]
+                doc_url = row[9] if len(row) > 9 else None
+                sub_keywords = row[10] if len(row) > 10 else ''
+                suggested_outline = row[11] if len(row) > 11 else ''
                 
                 if not keyword:  # no more keyword
                     print('[write_articles] no more keyword!')
@@ -128,11 +140,11 @@ class Command:
                         print('try again without formatting tables')
                         # Try one more time without format_table
                         doc_url = self.doc_generator.gen_doc_file(current_article, keyword, optimized_title, optimized_description, optimized_h1, format_table=False)
-                    ws1.update_cell(row_index, 9, doc_url)
+                    ws1.update_cell(row_index, 10, doc_url)
 
                 elif status == 'Write':
                     # Update status to 'PROCESSING'
-                    ws1.update_cell(row_index, 7, "Processing")
+                    ws1.update_cell(row_index, 8, "Processing")
                     time.sleep(1)  # To avoid API rate limits
                     
                     attempt = 0
@@ -154,7 +166,7 @@ class Command:
                     if attempt >= 10:
                         print('[write_articles] Failed to create worksheet after 10 attempts')
                         # update status to failed
-                        ws1.update_cell(row_index, 7, "Failed")
+                        ws1.update_cell(row_index, 8, "Failed")
                         time.sleep(1)
                         continue
 
@@ -166,7 +178,7 @@ class Command:
                     try:
                         # self.run(ws, keyword, urls)
                         writer = ArticleWriter()
-                        await writer.write_article(ws, keyword, urls, sub_keywords, suggested_outline, reference_url)
+                        await writer.write_article(ws, keyword, urls, sub_keywords, suggested_outline, reference_url, target_length)
                         status = "Review"
                     except Exception as ex0:
                         import traceback
@@ -175,17 +187,17 @@ class Command:
                         traceback.print_exc()
                         status = "Failed"
 
-                    ws1.update_cell(row_index, 7, status)
+                    ws1.update_cell(row_index, 8, status)
 
                     if not link:
                         link_formula = f'=HYPERLINK("#gid={ws.id}", "{keyword}")'
-                        ws1.update_cell(row_index, 8, link_formula)
+                        ws1.update_cell(row_index, 9, link_formula)
                         time.sleep(1)
 
 
                     if status == 'Review':
                         doc_url = self.doc_generator.gen_doc_file(writer.article_v3, keyword, writer.optimized_title, writer.optimized_description, writer.optimized_h1)
-                        ws1.update_cell(row_index, 9, doc_url)
+                        ws1.update_cell(row_index, 10, doc_url)
 
             except Exception as ex:
                 import traceback
@@ -212,12 +224,12 @@ class Command:
         # Read all rows from the first worksheet starting at row 2 up to row 500
         rows = ws1.get_all_values()[1:500]
 
-        # Create a mapping of keywords to their status (column G) - case insensitive
+        # Create a mapping of keywords to their status (column H) - case insensitive
         keyword_status_map = {}
         for row in rows:
-            if row and len(row) > 6 and row[0]:  # Ensure we have keyword and status column
+            if row and len(row) > 7 and row[0]:  # Ensure we have keyword and status column
                 keyword = row[0].strip()
-                status = row[6] if len(row) > 6 else ''
+                status = row[7] if len(row) > 7 else ''
                 # Store with lowercase key for case-insensitive lookup
                 keyword_status_map[keyword.lower()] = status
 
@@ -240,9 +252,9 @@ class Command:
                 else:
                     print(f'[write_articles] sheet {sheet} (normalized: {normalized_sheet}) has no corresponding keyword in Sheet1, skipping deletion')
 
-    async def run(self, ws, keyword, urls, reference_url='', generate_doc=False):
+    async def run(self, ws, keyword, urls, reference_url='', target_length=None, generate_doc=False):
         writer = ArticleWriter()
-        await writer.write_article(ws, keyword, urls, reference_url=reference_url) # pass other args as needed
+        await writer.write_article(ws, keyword, urls, reference_url=reference_url, target_length=target_length) # pass other args as needed
 
 
 @task_logger('write_articles_task')
@@ -320,8 +332,8 @@ if __name__ == "__main__":
         sh, worksheets = command.prepare_worksheets()
         ws = worksheets.get(args.keyword)
         if ws:
-            keyword, urls, reference_url = command.read_spreadsheet(ws)
-            result = command.run(ws, keyword, urls, reference_url=reference_url, generate_doc=args.generate_doc)
+            keyword, urls, reference_url, target_length = command.read_spreadsheet(ws)
+            result = command.run(ws, keyword, urls, reference_url=reference_url, target_length=target_length, generate_doc=args.generate_doc)
         else:
             print(f"[write_articles] Worksheet for keyword '{args.keyword}' not found")
     else:

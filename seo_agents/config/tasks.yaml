@@ -804,6 +804,8 @@ trim_article_task:
     * Do NOT remove entire sections, headings, the FAQ section, or tables - condense their prose, don't delete structure
     * Do NOT remove the internal link to https://natcenter.vn in the conclusion
     * Keep the article's core facts, examples, and statistics intact
+    * Keep paragraphs short (2-4 sentences each) after condensing - if merging sentences would produce a longer
+      paragraph, split the result back into multiple short paragraphs instead of leaving one long block
 
     IMPORTANT: The output must remain entirely in Vietnamese, in Markdown format, with the same heading structure
     and numbering as the original article.

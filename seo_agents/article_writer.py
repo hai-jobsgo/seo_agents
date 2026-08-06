@@ -44,7 +44,7 @@ class ArticleWriter:
         # self.improved_article = None
         # self.article_with_images = None
     
-    async def write_article(self, ws, keyword, urls, sub_keywords='', suggested_outline='', reference_url=''):
+    async def write_article(self, ws, keyword, urls, sub_keywords='', suggested_outline='', reference_url='', target_length=None):
         """
         Run the URL analyzer crew.
         """
@@ -73,7 +73,7 @@ class ArticleWriter:
 
         # Call the helper function to process URLs
         titles, descriptions, h1s, outlines, word_counts = await self._process_urls(ws, keyword, urls)
-        word_count_guidance, word_count_ceiling = self._build_word_count_guidance(word_counts)
+        word_count_guidance, word_count_ceiling = self._build_word_count_guidance(target_length, word_counts)
         print('word_count_guidance: ', word_count_guidance)
         print('word_count_ceiling: ', word_count_ceiling)
 
@@ -500,16 +500,28 @@ class ArticleWriter:
         return titles, descriptions, h1s, outlines, word_counts
         # return titles, descriptions, h1s, articles, outlines
 
-    def _build_word_count_guidance(self, word_counts):
+    def _build_word_count_guidance(self, target_length, word_counts):
         """
         Build a Vietnamese guidance string on target article length, and a hard
-        numeric ceiling, based on the word counts of the competitor source
+        numeric ceiling.
+
+        If an explicit Target Length was set on the sheet row, it takes priority
+        and overrides everything else. Otherwise, falls back to the original
+        rule: derive the target from the word counts of the competitor source
         articles (urls[1:]; urls[0] is our own site's reference article,
         excluded from the competitor stats).
 
         Returns:
             tuple: (guidance_text: str, ceiling: int | None)
         """
+        if target_length and target_length > 0:
+            ceiling = round(target_length * 1.1)
+            guidance = (
+                f"Mục tiêu độ dài bài viết: khoảng {target_length} từ. "
+                f"KHÔNG viết dài hơn đáng kể so với mục tiêu (tối đa vượt khoảng 10%, tức khoảng {ceiling} từ)."
+            )
+            return guidance, ceiling
+
         counts = []
         for wc in word_counts[1:]:
             try:
