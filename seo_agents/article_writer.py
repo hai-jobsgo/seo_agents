@@ -2,6 +2,7 @@ import os
 import gspread
 from gspread.utils import rowcol_to_a1
 import time
+from datetime import datetime
 from pathlib import Path
 
 # Use relative imports when running from within the package
@@ -66,6 +67,12 @@ class ArticleWriter:
         """
         col = 2
         outlines = []
+
+        # Real current month/year, passed to prompts that may need to reference "now" for
+        # genuinely time-sensitive content (e.g. price lists) - never hardcode a year in prompts.
+        now = datetime.now()
+        current_month = now.month
+        current_year = now.year
 
         # Add Header - Note: Content File header is removed as requested
         headers = ['Title', 'Meta Description', 'H1', 'Word Count', 'Keyword Density', 'Image Count', 'Table Count', 'Outline',
@@ -193,7 +200,9 @@ class ArticleWriter:
                     "article_2_h1": h1s[2],
                     "article_3_title": titles[3],
                     "article_3_meta_description": descriptions[3],
-                    "article_3_h1": h1s[3]
+                    "article_3_h1": h1s[3],
+                    "current_month": current_month,
+                    "current_year": current_year
                 }
             else:
                 inputs = {
@@ -210,7 +219,9 @@ class ArticleWriter:
                     "competitor_2_h1": h1s[2],
                     "competitor_3_title": titles[3],
                     "competitor_3_meta_description": descriptions[3],
-                    "competitor_3_h1": h1s[3]
+                    "competitor_3_h1": h1s[3],
+                    "current_month": current_month,
+                    "current_year": current_year
                 }
             result = await crew.kickoff_async(inputs=inputs)
             print("SEO Improvement: ", result.json_dict)
@@ -249,7 +260,9 @@ class ArticleWriter:
                 "optimized_h1": optimized_h1,
                 "original_article": original_article,
                 "extra_request": sub_keywords,
-                "word_count_guidance": word_count_guidance
+                "word_count_guidance": word_count_guidance,
+                "current_month": current_month,
+                "current_year": current_year
             }
             result = await writer.kickoff_async(inputs=inputs)
             article_v1 = result.raw

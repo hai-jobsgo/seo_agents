@@ -389,7 +389,10 @@ class ImageGenerator:
             insert_position = None
             for heading, pos in heading_positions:
                 if section_name.lower() in heading.lower():
-                    insert_position = pos
+                    # Insert after the first paragraph of the section rather than
+                    # immediately under the heading - find the next paragraph break.
+                    para_break = article_text.find('\n\n', pos)
+                    insert_position = para_break if para_break != -1 else pos
                     break
             print('insert_position: ', insert_position)
             # If no exact match, use a heuristic approach

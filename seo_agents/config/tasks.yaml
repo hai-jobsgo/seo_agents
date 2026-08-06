@@ -500,24 +500,30 @@ write_article_task:
     Content Outline:  
     {content_outline}  
 
-    Target Keyword: {keyword}  
-    Suggested Title: {optimized_title}  
-    Suggested Meta Description: {optimized_description}  
-    Suggested H1: {optimized_h1}  
+    Target Keyword: {keyword}
+    Suggested Title: {optimized_title}
+    Suggested Meta Description: {optimized_description}
+    Suggested H1: {optimized_h1}
     Extra Request (optional): {extra_request}
+    Current Month/Year (for time-sensitive mentions only): {current_month}/{current_year}
 
-    Original Article (optional):  
+    Original Article (optional):
     {original_article}
 
   expected_output: >
-    A publication-ready article in Vietnamese in Markdown format that fully implements the provided outline structure, guidance notes, and any extra requests (if they do not reduce article quality). 
+    A publication-ready article in Vietnamese in Markdown format that fully implements the provided outline structure, guidance notes, and any extra requests (if they do not reduce article quality).
     The content should demonstrate expertise on the topic while providing practical value to car owners
     and drivers. The article should be comprehensive, engaging, and naturally optimized for search engines.
     
     The final article should include:
     - The specified optimized H1 heading
-    - All section and subsection headings exactly as structured in the outline with the same numbering.
+    - All section and subsection headings exactly as structured in the outline with the same numbering, and written
+      in normal sentence case from H2 downward (not Title Case)
+    - Short paragraphs (2-4 sentences each) throughout, with bullet lists/tables/bold/italics used flexibly where
+      they aid scannability
     - Fully developed content for each section following the inline guidance notes
+    - Any statistic or quote attributed to a named, credible source
+    - No fabricated or stale years - the current year only appears where the content is genuinely time-sensitive
     - Brief, direct introduction and conclusion sections (no lengthy opening or closing)
     - Concise FAQ answers (1-2 lines per question)
     - FAQ questions addressing topics not already covered in the main content
@@ -528,10 +534,10 @@ write_article_task:
       in the final draft, not estimated
 
     The final article must NOT include table of content.
-    
-    The article should require minimal editing before publication and reflect best practices in both 
+
+    The article should require minimal editing before publication and reflect best practices in both
     content development and SEO optimization.
-  
+
   agent: seo_content_writer
 
 # generate_image_prompts_task:
@@ -723,21 +729,27 @@ review_article_task:
         * DO NOT suggest reformatting FAQ sections as tables
     
     3. CONTENT ENHANCEMENT FOR THE SECTION
-        * If a section lacks data points, suggest 1-2 specific statistics or examples to strengthen it if appropriate, and only 
+        * If a section lacks data points, suggest 1-2 specific statistics or examples to strengthen it if appropriate, and only
         if you can suggest specific data with valid sources, not vague examples.
-        * Convert bullet points with short sentences within a section into well-developed paragraphs.
-        * Update any outdated year references in the section to 2025 if appropriate.
-    
+        * If a "bullet point" actually contains several sentences of explanation, suggest turning it into its own
+          short paragraph (2-4 sentences); genuine lists (steps, enumerations, comparisons) should stay as bullets.
+        * Flag any year reference that is hardcoded/stale or that appears in content which isn't actually
+          time-sensitive (e.g. a year embedded in a general definition or how-to); recommend removing it unless the
+          section is genuinely time-sensitive (pricing, rankings, market data), in which case it should reflect the
+          real current month/year at the time of review - never a guessed or fixed year.
+
     4. SECTION READABILITY
         * Suggest specific bolding or formatting opportunities within the section
-        * Recommend converting disconnected bullet points into cohesive paragraphs with transition phrases
+        * Ensure paragraphs stay short (2-4 sentences); recommend splitting long paragraphs and, separately, using
+          bullet lists/tables for genuine enumerations, steps, or comparisons rather than forcing everything into prose
         * If the section contains comparisons, suggest converting them to a well-structured table (except for FAQ sections)
-    
+        * Flag any H2/H3/H4 heading that is capitalized word-by-word (Title Case) and suggest normal sentence case instead
+
     5. SECTION CREDIBILITY
         * Flag exaggerated claims within the section that lack substantiated evidence
         * Flag any hallucinations (made-up references, fake people, statistics) within the section.
         * Suggest rephrasing or adding supporting data to strengthen credibility
-        * Ensure statistics and dated information within the section reference current year (2025) where appropriate
+        * Flag any statistic or quote that isn't attributed to a named, credible source, and suggest adding one
     
     6. NATURAL LANGUAGE IN THE SECTION
         * Identify specific formal/robotic phrases within the section and suggest more conversational alternatives
@@ -754,8 +766,9 @@ review_article_task:
     * Provide specific, actionable suggestions with exact locations (section, paragraph, sentence)
     * Keep feedback concise and implementation-focused
     * Assume most sections are already well-structured and only need minor optimizations
-    * For short bullet points, suggest converting them to fluid paragraphs for better readability
-    * Check for outdated year references and suggest updating them to 2025
+    * For bullet points that are really multi-sentence explanations, suggest converting them to short paragraphs;
+      keep genuine lists as bullets
+    * Flag stale, fabricated, or unnecessary year references (see CONTENT ENHANCEMENT above)
     * Look for opportunities to make the writing sound more natural and conversational
     
     IMPORTANT: Write all feedback in Vietnamese to ensure consistency for the content creator.
@@ -915,6 +928,9 @@ generate_image_prompts_task:
       - Place the first image in either the first or second section of the article
       - Distribute the remaining two images in different sections throughout the article
       - Space images evenly to maintain reader engagement throughout
+      - The chosen section should already contain at least one paragraph of body text so the image can be inserted
+        after that paragraph - never choose a section whose heading is immediately followed by another heading or
+        by a bullet list with no lead-in paragraph, since the image must not land directly under a heading
     
     * Ensure the image concepts:
       - Use realistic photography (no illustration or sketches or diagrams)
