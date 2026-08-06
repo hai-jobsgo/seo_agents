@@ -359,29 +359,31 @@ class ImageGenerator:
             Updated article text with image markdown inserted
         """
         print('insert_images_into_article: ', len(image_prompts))
-        
+
         # Sort image prompts by section to ensure proper ordering
         # image_prompts.sort(key=lambda x: x.section)
-        
+
         # Create a copy of the article text to modify
         updated_article = article_text
-        
-        # Find headings in the article
-        headings = re.finditer(r'^(#+)\s+(.*?)$', article_text, re.MULTILINE)
-        heading_positions = [(m.group(2).strip(), m.end()) for m in headings]
-        print('heading_positions: ', heading_positions)
-        
-        # Insert images at appropriate positions
-        for prompt in image_prompts:
+
+        # Insert images at appropriate positions. IMPORTANT: every position below is
+        # (re)computed against `updated_article` - the text as it stands *after* any
+        # earlier insertions in this loop - never against the original `article_text`.
+        # Searching against a stale copy while splicing into the growing one causes the
+        # position to drift by the length of every prior insertion, which can land a
+        # later image in the middle of a word.
+        for image_index, prompt in enumerate(image_prompts):
             if not prompt.image_url:
                 logger.warning(f"Skipping image insertion for {prompt.filename} - no image URL available")
                 continue
-                
-            # print("alt text: ", prompt.alt_text)
-            
+
             # Create image markdown with the public URL
             image_markdown = f'\n\n![{prompt.alt_text}]({prompt.image_url} "{prompt.caption}")\n\n'
-            
+
+            # Recompute headings fresh, against the current state of updated_article.
+            headings = re.finditer(r'^(#+)\s+(.*?)$', updated_article, re.MULTILINE)
+            heading_positions = [(m.group(2).strip(), m.end()) for m in headings]
+
             # Find the appropriate section to insert the image
             section_name = prompt.section
             print('section_name: ', section_name)
@@ -389,46 +391,49 @@ class ImageGenerator:
             insert_position = None
             for heading, pos in heading_positions:
                 if section_name.lower() in heading.lower():
-                    # Insert after the first paragraph of the section rather than
-                    # immediately under the heading - find the next paragraph break.
-                    para_break = article_text.find('\n\n', pos)
-                    insert_position = para_break if para_break != -1 else pos
+                    # Insert after the END of the section's first paragraph, not right
+                    # under the heading. The first '\n\n' after the heading is just the
+                    # heading/paragraph separator - skip past it and find the NEXT
+                    # '\n\n', which closes out that first paragraph.
+                    heading_sep = updated_article.find('\n\n', pos)
+                    if heading_sep != -1:
+                        para_end = updated_article.find('\n\n', heading_sep + 2)
+                        # If there's no further blank line, this section's paragraph
+                        # runs to the end of the document (e.g. it's the last
+                        # section) - insert there, never fall back to heading_sep
+                        # (that would land the image before the paragraph again).
+                        insert_position = para_end if para_end != -1 else len(updated_article)
+                    else:
+                        insert_position = pos
                     break
             print('insert_position: ', insert_position)
             # If no exact match, use a heuristic approach
             if insert_position is None:
                 # If it's the first image, insert after the first paragraph
-                if prompt == image_prompts[0]:
+                if image_index == 0:
                     # Find the end of the first paragraph
-                    first_para_end = article_text.find('\n\n', 0)
+                    first_para_end = updated_article.find('\n\n', 0)
                     if first_para_end != -1:
                         insert_position = first_para_end
                     else:
                         # If no paragraph break, insert at 25% of the article
-                        insert_position = len(article_text) // 4
+                        insert_position = len(updated_article) // 4
                 else:
                     # For other images, distribute evenly
-                    index = image_prompts.index(prompt)
-                    portion = len(article_text) / (len(image_prompts) + 1)
-                    target_position = int(portion * (index + 1))
-                    
+                    portion = len(updated_article) / (len(image_prompts) + 1)
+                    target_position = int(portion * (image_index + 1))
+
                     # Find the nearest paragraph break
-                    para_breaks = [m.start() for m in re.finditer(r'\n\n', article_text)]
+                    para_breaks = [m.start() for m in re.finditer(r'\n\n', updated_article)]
                     if para_breaks:
                         # Find the closest paragraph break
                         insert_position = min(para_breaks, key=lambda x: abs(x - target_position))
                     else:
                         insert_position = target_position
-            
+
             # Insert the image markdown at the calculated position
             if insert_position is not None:
                 updated_article = updated_article[:insert_position] + image_markdown + updated_article[insert_position:]
-                
-                # Update heading positions for subsequent insertions
-                for i in range(len(heading_positions)):
-                    if heading_positions[i][1] > insert_position:
-                        heading_name, pos = heading_positions[i]
-                        heading_positions[i] = (heading_name, pos + len(image_markdown))
         
         return updated_article
     
