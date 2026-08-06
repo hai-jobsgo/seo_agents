@@ -42,8 +42,7 @@ base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 class Command:
     def __init__(self):
-        self.use_cache = True 
-        self.prompt = ''
+        self.use_cache = True
         self.debug = True
         
         # Initialize the DocGenerator
@@ -164,7 +163,7 @@ class Command:
                     ws.update(range_name=f"{range_start}:{range_end}", values=values)
                     try:
                         # self.run(ws, keyword, urls)
-                        writer = ArticleWriter(prompt=self.prompt)
+                        writer = ArticleWriter()
                         await writer.write_article(ws, keyword, urls, sub_keywords, suggested_outline)
                         status = "Review"
                     except Exception as ex0:
@@ -240,7 +239,7 @@ class Command:
                     print(f'[write_articles] sheet {sheet} (normalized: {normalized_sheet}) has no corresponding keyword in Sheet1, skipping deletion')
 
     async def run(self, ws, keyword, urls, generate_doc=False):
-        writer = ArticleWriter(prompt=self.prompt)
+        writer = ArticleWriter()
         await writer.write_article(ws, keyword, urls) # pass other args as needed
 
 
@@ -265,15 +264,6 @@ async def write_articles_task():
         cmd.sheet_id = sheet_id
         await cmd.scan_spreadsheet()
         print('[write_articles] scan spreadsheet COMPLETED')
-
-        # Optional second "multi blog" flow — only runs if a separate sheet is configured.
-        multi_sheet_id = os.getenv('SEO_MULTI_SHEET_ID')
-        if multi_sheet_id:
-            logger.info("write_articles_task SEO Flow Multi")
-            cmd.sheet_name = os.getenv('SEO_MULTI_SHEET_NAME', 'SEO Flow Multi Blogs')
-            cmd.sheet_id = multi_sheet_id
-            cmd.prompt = 'multi'
-            await cmd.scan_spreadsheet()
     except Exception as e:
         logger.exception(f"Error occurred in write_articles_task: {e}")
         print(f"[write_articles] Error in scan_spreadsheet_seo_task: {str(e)}")
@@ -309,29 +299,17 @@ if __name__ == "__main__":
         default=False,
         help='Generate or update Google Doc with the article that includes images',
     )
-    parser.add_argument(
-        '--prompt',
-        dest='prompt',
-        default='',
-        choices=['', 'multi', 'nat', 'pv'],
-        help="Prompt/crew type: '', 'multi', 'nat', or 'pv' (default: '')",
-    )
-    # parser.add_argument('--output', default='output/outline.md', 
+    # parser.add_argument('--output', default='output/outline.md',
     #                    help='Output file path (default: output/outline.md)')
-    
+
     args = parser.parse_args()
     command = Command()
     if args.no_cache:
         command.use_cache = False
-    if args.prompt == 'multi':
-        command.sheet_name = os.getenv('SEO_MULTI_SHEET_NAME', 'SEO Flow Multi Blogs')
-        command.sheet_id = os.getenv('SEO_MULTI_SHEET_ID')
-    else: # default
-        command.sheet_name = os.getenv('SEO_SHEET_NAME', 'SEO Flow')
-        command.sheet_id = os.getenv('SEO_SHEET_ID')
+    command.sheet_name = os.getenv('SEO_SHEET_NAME', 'SEO Flow')
+    command.sheet_id = os.getenv('SEO_SHEET_ID')
 
     # command.base_dir = base_dir  # Initialize base_dir from the global variable
-    command.prompt = args.prompt
     command.debug=True
 
     if args.delete:

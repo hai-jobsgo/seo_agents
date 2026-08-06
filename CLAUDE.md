@@ -54,7 +54,6 @@ seo_agents/                 (project root = /var/www/seo_agents on dev47)
     ├── publish_articles.py # publish_article_task (entrypoint)
     ├── article_writer.py   # orchestrates one article end-to-end
     ├── crew.py             # CrewAI agents/tasks (config/agents.yaml, config/tasks.yaml)
-    ├── multi_crew.py       # "multi" prompt variant (config/multi_*.yaml)
     ├── doc_generator.py    # article text/HTML → Google Doc
     ├── doc_to_wp_api.py    # Google Doc → WordPress via REST (/wp-json/wp/v2)
     ├── image_generator.py  # Gemini/Vertex image generation
@@ -88,7 +87,6 @@ All site-specific values are env vars (see `.env.example`). The important ones:
   *Application Password*.
 - `SEO_SHEET_ID` — the Google Sheet key of this site's "SEO Flow" control sheet. Make a
   copy of the original sheet layout (see below) for the new site.
-- `SEO_MULTI_SHEET_ID` — optional; enables the second "multi blog" pass. Leave blank to skip.
 - `GEMINI_API_KEY` — CrewAI agents run on `gemini/gemini-2.5-flash`; image gen uses Gemini too.
 - `OPENAI_API_KEY` — one agent (the writer) uses `openai/gpt-4.1-mini`. Required unless you
   switch that agent to Gemini in `seo_agents/config/agents.yaml`.

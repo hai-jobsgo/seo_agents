@@ -8,14 +8,12 @@ from pathlib import Path
 # Use relative imports when running from within the package
 try:
     from .crew import ContentAnalyzerCrew
-    from .multi_crew import MultiContentCrew
     from .doc_generator import DocGenerator
     from .parsers.parsers import create_parser
     from .image_generator import ImageGenerator
 except ImportError:
     # Fall back to absolute imports when running as a script
     from seo_agents.crew import ContentAnalyzerCrew
-    from seo_agents.multi_crew import MultiContentCrew
     from seo_agents.doc_generator import DocGenerator
     from seo_agents.parsers.parsers import create_parser
     from seo_agents.image_generator import ImageGenerator
@@ -24,24 +22,7 @@ except ImportError:
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 class ArticleWriter:
-    def __init__(self, prompt=''):
-        # Select crew class based on prompt
-        print('ArticleWriter prompt:', prompt)
-        
-        self.prompt = prompt
-        # Control the steps
-        self.improve_original = True 
-        self.insert_link = True
-        self.high_quality_image = True
-
-        if prompt == 'multi':
-            self.CrewClass = MultiContentCrew
-            self.improve_original = False
-            self.insert_link = False
-            self.high_quality_image = False
-        else:
-            self.CrewClass = ContentAnalyzerCrew
-        
+    def __init__(self):
         # Initialize the DocGenerator
         self.doc_generator = DocGenerator()
         
@@ -140,22 +121,7 @@ class ArticleWriter:
                     "competitor_3_outline": outlines[3],
                     "word_count_guidance": word_count_guidance
                 }
-                crew = self.CrewClass().outline_following_crew()
-            elif self.prompt == 'multi':
-                inputs = {
-                    "keyword": keyword,
-                    "article_1_outline": outlines[1],
-                    "article_2_outline": outlines[2],
-                    "article_3_outline": outlines[3],
-                    "word_count_guidance": word_count_guidance
-                }
-                if self.improve_original and outlines[0]:
-                    print('[write_articles] Improve existing outline')
-                    inputs["our_outline"] = outlines[0]
-                    crew = self.CrewClass().outline_improvement_crew()
-                else:
-                    print('[write_articles] Generating new outline')
-                    crew = self.CrewClass().outline_generation_crew()
+                crew = ContentAnalyzerCrew().outline_following_crew()
             else:
                 inputs = {
                     "keyword": keyword,
@@ -164,13 +130,13 @@ class ArticleWriter:
                     "competitor_3_outline": outlines[3],
                     "word_count_guidance": word_count_guidance
                 }
-                if self.improve_original and outlines[0]:
+                if outlines[0]:
                     print('[write_articles] Improve existing outline')
                     inputs["our_outline"] = outlines[0]
-                    crew = self.CrewClass().outline_improvement_crew()
+                    crew = ContentAnalyzerCrew().outline_improvement_crew()
                 else:
                     print('[write_articles] Generating new outline')
-                    crew = self.CrewClass().outline_generation_crew()
+                    crew = ContentAnalyzerCrew().outline_generation_crew()
 
             result = await crew.kickoff_async(inputs=inputs)
             improved_outline = result.raw
@@ -184,45 +150,25 @@ class ArticleWriter:
 
 
         if not optimized_title:
-            crew = self.CrewClass().seo_content_optimization_crew()
-            if self.prompt == 'multi':
-                inputs = {
-                    "keyword": keyword,
-                    "content_outline": improved_outline,
-                    "current_title": titles[0],
-                    "current_meta_description": descriptions[0],
-                    "current_h1": h1s[0],
-                    "article_1_title": titles[1],
-                    "article_1_meta_description": descriptions[1],
-                    "article_1_h1": h1s[1],
-                    "article_2_title": titles[2],
-                    "article_2_meta_description": descriptions[2],
-                    "article_2_h1": h1s[2],
-                    "article_3_title": titles[3],
-                    "article_3_meta_description": descriptions[3],
-                    "article_3_h1": h1s[3],
-                    "current_month": current_month,
-                    "current_year": current_year
-                }
-            else:
-                inputs = {
-                    "keyword": keyword,
-                    "content_outline": improved_outline,
-                    "current_title": titles[0],
-                    "current_meta_description": descriptions[0],
-                    "current_h1": h1s[0],
-                    "competitor_1_title": titles[1],
-                    "competitor_1_meta_description": descriptions[1],
-                    "competitor_1_h1": h1s[1],
-                    "competitor_2_title": titles[2],
-                    "competitor_2_meta_description": descriptions[2],
-                    "competitor_2_h1": h1s[2],
-                    "competitor_3_title": titles[3],
-                    "competitor_3_meta_description": descriptions[3],
-                    "competitor_3_h1": h1s[3],
-                    "current_month": current_month,
-                    "current_year": current_year
-                }
+            crew = ContentAnalyzerCrew().seo_content_optimization_crew()
+            inputs = {
+                "keyword": keyword,
+                "content_outline": improved_outline,
+                "current_title": titles[0],
+                "current_meta_description": descriptions[0],
+                "current_h1": h1s[0],
+                "competitor_1_title": titles[1],
+                "competitor_1_meta_description": descriptions[1],
+                "competitor_1_h1": h1s[1],
+                "competitor_2_title": titles[2],
+                "competitor_2_meta_description": descriptions[2],
+                "competitor_2_h1": h1s[2],
+                "competitor_3_title": titles[3],
+                "competitor_3_meta_description": descriptions[3],
+                "competitor_3_h1": h1s[3],
+                "current_month": current_month,
+                "current_year": current_year
+            }
             result = await crew.kickoff_async(inputs=inputs)
             print("SEO Improvement: ", result.json_dict)
             optimized_title = result.json_dict['title']
@@ -251,7 +197,7 @@ class ArticleWriter:
                     print('original_article length: ', len(original_article))
 
             
-            writer = self.CrewClass().seo_writer_crew()
+            writer = ContentAnalyzerCrew().seo_writer_crew()
             inputs = {
                 "keyword": keyword,
                 "content_outline": improved_outline,
@@ -275,7 +221,7 @@ class ArticleWriter:
             if word_count_ceiling and actual_word_count > word_count_ceiling:
                 print(f"[write_articles] Article ({actual_word_count} words) exceeds ceiling "
                       f"({word_count_ceiling} words) - trimming")
-                trimmer = self.CrewClass().trim_article_crew()
+                trimmer = ContentAnalyzerCrew().trim_article_crew()
                 trim_inputs = {
                     "original_article": article_v1,
                     "target_word_count": word_count_ceiling,
@@ -300,7 +246,7 @@ class ArticleWriter:
         # SEO Review step
         if not ai_review:
             # print('Reviewing Article')
-            # reviewer = self.CrewClass().seo_reviewer_crew()
+            # reviewer = ContentAnalyzerCrew().seo_reviewer_crew()
             # inputs = {
             #     "keyword": keyword,
             #     "article_content": article_v1
@@ -329,7 +275,7 @@ class ArticleWriter:
         # Generate image prompts
         if not image_prompts:
             print('Generating Image Prompts')
-            image_generator = self.CrewClass().image_prompts_crew()
+            image_generator = ContentAnalyzerCrew().image_prompts_crew()
             inputs = {
                 "keyword": keyword,
                 "article": article_v2
@@ -499,7 +445,7 @@ class ArticleWriter:
                             'content': content,
                             'toc': toc
                         }
-                        crew = self.CrewClass().outline_extraction_crew()
+                        crew = ContentAnalyzerCrew().outline_extraction_crew()
                         result = await crew.kickoff_async(inputs=inputs)
                         print(f"Token Usage: {result.token_usage}")
                         outline = result.raw

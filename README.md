@@ -33,7 +33,6 @@ Everything site-specific is an environment variable (`.env`):
 | `WP_URL` | Target WordPress site root (REST base = `{WP_URL}/wp-json/wp/v2`) |
 | `WP_USERNAME` / `WP_PASSWORD` | WordPress user + **Application Password** |
 | `SEO_SHEET_ID` | Google Sheet key of this site's "SEO Flow" control sheet |
-| `SEO_MULTI_SHEET_ID` | Optional second "multi blog" flow (blank = off) |
 | `GEMINI_API_KEY` | CrewAI agents + image generation |
 | `OPENAI_API_KEY` | One writer agent (`gpt-4.1-mini`) |
 
