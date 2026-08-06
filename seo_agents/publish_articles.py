@@ -3,7 +3,6 @@ import argparse
 import gspread
 import time
 import re
-from urllib.parse import urlparse
 from dotenv import load_dotenv
 from seo_agents.doc_to_wp_api import publish_doc
 from seo_agents.task_logger import task_logger
@@ -89,20 +88,13 @@ class PublishCommand:
         
         return keywords
 
-    def publish_to_wordpress(self, doc_url, wp_target_url, keyword, tag, category):
-        """Publish Google Doc content to WordPress"""
+    def publish_to_wordpress(self, doc_url, keyword, tag, category):
+        """Publish Google Doc content to WordPress as a new post."""
         try:
-            print(f"[publish_articles] Publishing document {doc_url} to {wp_target_url}")
+            print(f"[publish_articles] Publishing document {doc_url}")
 
             # Extract keywords/tags from the URL or use defaults
             keywords = self.extract_keywords_from_title(keyword, keyword)
-
-            # Only treat wp_target_url as an existing post to update if it's actually
-            # on the configured WP_URL host — otherwise (blank, or some other site) a
-            # new post is created, which is the correct default for this site.
-            existing_post_url = None
-            if wp_target_url and urlparse(wp_target_url).netloc == urlparse(self.wp_url).netloc:
-                existing_post_url = wp_target_url
 
             # Publish the document
             result = publish_doc(
@@ -114,7 +106,7 @@ class PublishCommand:
                 tag=tag,
                 category=category,
                 status='publish',  # Always publish
-                existing_post_url=existing_post_url
+                existing_post_url=None
             )
             url = result['url']
             print(f"[publish_articles] Published successfully: {url}")
@@ -133,53 +125,48 @@ class PublishCommand:
         
         # Read all rows from the first worksheet starting at row 2
         print('[publish_articles] getting cells...')
-        rows = ws1.get("A2:P2000")  # only columns A–P, rows 2–1000
+        rows = ws1.get("A2:O2000")  # only columns A–O, rows 2–1000
 
         print('[publish_articles] rows count: ', len(rows))
         found_publish = False
 
         for row in rows:
             try:
-                if len(row) < 10:  # Ensure row has enough columns
+                if len(row) < 9:  # Ensure row has enough columns
                     continue
 
                 keyword = row[0]
-                wp_target_url = row[1]  # URL in WordPress where to publish
-                status = row[7]
-                doc_url = row[9] if len(row) > 9 else None
-                tag = row[15] if len(row) > 15 else None
-                category = row[13] if len(row) > 13 else None
-                
+                status = row[6]
+                doc_url = row[8] if len(row) > 8 else None
+                category = row[12] if len(row) > 12 else None
+                tag = row[14] if len(row) > 14 else None
+
                 if not keyword:  # No more keywords
                     print('[publish_articles] no more keyword')
                     break
-                
+
                 # Skip rows that aren't ready to publish or don't have docs
                 #if not (keyword == 'thuế PIT là gì' and doc_url):
                 if status.lower() != 'publish' or not doc_url:
                     continue
-                
+
                 found_publish = True
                 print(f"[publish_articles] Found article to publish: {keyword}")
-                
+
                 # Get current row index (for updating status later)
                 row_index = rows.index(row) + 2  # +2 because sheet is 1-indexed and we skipped header
-                
+
                 # Update status to 'Processing'
-                ws1.update_cell(row_index, 8, "Processing")
+                ws1.update_cell(row_index, 7, "Processing")
                 time.sleep(1)  # Avoid API rate limits
 
                 # Publish to WordPress
-                success, result = self.publish_to_wordpress(doc_url, wp_target_url, keyword, tag, category)
+                success, result = self.publish_to_wordpress(doc_url, keyword, tag, category)
 
                 # Update status based on result
                 new_status = "Done" if success else "Failed"
-                ws1.update_cell(row_index, 8, new_status)
+                ws1.update_cell(row_index, 7, new_status)
 
-                # If successful, update the target URL cell if it was empty
-                if success and (not wp_target_url or wp_target_url == ""):
-                    ws1.update_cell(row_index, 2, result)
-                
                 # Add a small delay to avoid hitting API limits
                 time.sleep(2)
                 

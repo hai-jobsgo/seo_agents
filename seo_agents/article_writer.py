@@ -139,10 +139,9 @@ class ArticleWriter:
                 inputs = {
                     "keyword": keyword,
                     "suggested_outline": suggested_outline,
-                    "our_outline": outlines[0] if outlines[0] else "",
-                    "competitor_1_outline": outlines[1],
-                    "competitor_2_outline": outlines[2],
-                    "competitor_3_outline": outlines[3],
+                    "competitor_1_outline": outlines[0],
+                    "competitor_2_outline": outlines[1],
+                    "competitor_3_outline": outlines[2],
                     "reference_content": reference_content,
                     "word_count_guidance": word_count_guidance
                 }
@@ -151,9 +150,9 @@ class ArticleWriter:
                 print('[write_articles] Generating new outline')
                 inputs = {
                     "keyword": keyword,
-                    "competitor_1_outline": outlines[1],
-                    "competitor_2_outline": outlines[2],
-                    "competitor_3_outline": outlines[3],
+                    "competitor_1_outline": outlines[0],
+                    "competitor_2_outline": outlines[1],
+                    "competitor_3_outline": outlines[2],
                     "reference_content": reference_content,
                     "word_count_guidance": word_count_guidance
                 }
@@ -175,18 +174,15 @@ class ArticleWriter:
             inputs = {
                 "keyword": keyword,
                 "content_outline": improved_outline,
-                "current_title": titles[0],
-                "current_meta_description": descriptions[0],
-                "current_h1": h1s[0],
-                "competitor_1_title": titles[1],
-                "competitor_1_meta_description": descriptions[1],
-                "competitor_1_h1": h1s[1],
-                "competitor_2_title": titles[2],
-                "competitor_2_meta_description": descriptions[2],
-                "competitor_2_h1": h1s[2],
-                "competitor_3_title": titles[3],
-                "competitor_3_meta_description": descriptions[3],
-                "competitor_3_h1": h1s[3],
+                "competitor_1_title": titles[0],
+                "competitor_1_meta_description": descriptions[0],
+                "competitor_1_h1": h1s[0],
+                "competitor_2_title": titles[1],
+                "competitor_2_meta_description": descriptions[1],
+                "competitor_2_h1": h1s[1],
+                "competitor_3_title": titles[2],
+                "competitor_3_meta_description": descriptions[2],
+                "competitor_3_h1": h1s[2],
                 "current_month": current_month,
                 "current_year": current_year
             }
@@ -507,9 +503,8 @@ class ArticleWriter:
 
         If an explicit Target Length was set on the sheet row, it takes priority
         and overrides everything else. Otherwise, falls back to the original
-        rule: derive the target from the word counts of the competitor source
-        articles (urls[1:]; urls[0] is our own site's reference article,
-        excluded from the competitor stats).
+        rule: derive the target from the word counts of the 3 competitor
+        source articles.
 
         Returns:
             tuple: (guidance_text: str, ceiling: int | None)
@@ -523,7 +518,7 @@ class ArticleWriter:
             return guidance, ceiling
 
         counts = []
-        for wc in word_counts[1:]:
+        for wc in word_counts:
             try:
                 n = int(str(wc).strip())
                 if n > 0:

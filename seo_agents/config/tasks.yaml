@@ -45,7 +45,7 @@ extract_outline_task:
   
 follow_outline_task:
   description: >
-    Enhance the suggested outline by gathering detailed notes and guidance for each section from competitor outlines or our outline,
+    Enhance the suggested outline by gathering detailed notes and guidance for each section from competitor outlines,
     while strictly maintaining the exact structure and headings of the suggested outline.
 
     CRITICAL REQUIREMENTS:
@@ -62,7 +62,7 @@ follow_outline_task:
 
     ENHANCEMENT PROCESS:
     For each section in the suggested outline:
-    1. Review the same or similar sections in all 4 reference outlines (Outline 1-4)
+    1. Review the same or similar sections in all 3 reference outlines (Outline 1-3)
     2. Extract valuable implementation details, examples, data points, or approaches
     3. Add or enhance inline notes [GHI CHÚ: ] with specific guidance on:
        - Technical concepts that need explanation
@@ -73,7 +73,7 @@ follow_outline_task:
     4. Ensure notes provide actionable guidance for content creation
 
     NOTE ENHANCEMENT GUIDELINES:
-    * Transfer relevant notes from reference outlines (outline1-4) that match sections in the suggested outline
+    * Transfer relevant notes from reference outlines (outline1-3) that match sections in the suggested outline
     * Adapt and consolidate notes from multiple outlines when they cover the same section
     * Add new notes based on valuable content patterns identified in the reference outlines
     * Ensure all notes are written in Vietnamese
@@ -101,15 +101,12 @@ follow_outline_task:
     {suggested_outline}
 
     Outline 1 (for reference):
-    {our_outline}
-
-    Outline 2 (for reference):
     {competitor_1_outline}
 
-    Outline 3 (for reference):
+    Outline 2 (for reference):
     {competitor_2_outline}
 
-    Outline 4 (for reference):
+    Outline 3 (for reference):
     {competitor_3_outline}
 
   expected_output: >
@@ -286,10 +283,6 @@ improve_seo_elements_task:
     Content outline:
     {content_outline}
 
-    Our current title: {current_title}
-    Our current meta description: {current_meta_description}
-    Our current H1: {current_h1}
-    
     Competitor 1:
     - Title: {competitor_1_title}
     - Meta Description: {competitor_1_meta_description}

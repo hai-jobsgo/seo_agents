@@ -98,17 +98,18 @@ All site-specific values are env vars (see `.env.example`). The important ones:
 | Col | Field | Used by |
 |---|---|---|
 | A | keyword (also the per-keyword worksheet name) | both |
-| B | WordPress target URL (blank = create new post) | publish |
-| C–E | competitor URLs (3) | write |
-| F | **Reference URL** — authoritative source (manufacturer spec page, price list, etc.) scraped once and fed to the outline tasks as the ground truth for exact product data/specs | write |
-| G | **Target Length** — target word count for the article; if blank, falls back to the word-count-based rule derived from the competitor URLs (C–E) instead of a fixed number | write |
-| H | **status**: `Write` → `Processing` → `Review` → `Publish` → `Done`/`Failed` | both |
-| I | link to the per-keyword worksheet (auto) | write |
-| J | Google Doc URL (auto) | both |
+| B–D | competitor URLs (3) | write |
+| E | **Reference URL** — authoritative source (manufacturer spec page, price list, etc.) scraped once and fed to the outline tasks as the ground truth for exact product data/specs | write |
+| F | **Target Length** — target word count for the article; if blank, falls back to the word-count-based rule derived from the competitor URLs (B–D) instead of a fixed number | write |
+| G | **status**: `Write` → `Processing` → `Review` → `Publish` → `Done`/`Failed` | both |
+| H | link to the per-keyword worksheet (auto) | write |
+| I | Google Doc URL (auto) | both |
 
 The code also defensively reads a few further columns if present (`len(row) > N` guarded, so they're optional and
-safe to leave off the sheet): K = sub-keywords, L = suggested outline, N = category (WP category name, resolved to
-an ID at publish time), P = tag. None of these exist on the current "NAT Blogs" sheet.
+safe to leave off the sheet): J = sub-keywords, K = suggested outline, M = category (WP category name, resolved to
+an ID at publish time), O = tag. None of these exist on the current "NAT Blogs" sheet.
+
+Publishing always creates a **new** WordPress post - there is no "update an existing post" column/flow anymore.
 
 Flow: set a row to `Write` → `write_articles_task` produces the article + Google Doc and
 flips it to `Review` → a human reviews the Doc → set it to `Publish` → `publish_article_task`
@@ -121,17 +122,12 @@ The service runs as a `systemctl --user` unit named `seo_agents`.
 
 ## Gotchas / known site-coupling
 
-1. **Updating existing posts is jobsgo-specific.** `publish_articles.publish_to_wordpress`
-   only treats col-B as an existing post when it contains `https://jobsgo.vn/blog/`
-   (with a `/blog/`↔`/wp/` permalink swap). For any other site, col-B is ignored and a
-   **new** post is always created — which is the correct default for a fresh blog. If the
-   new site needs in-place updates, generalize that check in `publish_articles.py`.
-2. **`env/dashboard-gcloud.json` is required** for all Google Sheets/Docs/Drive access and
+1. **`env/dashboard-gcloud.json` is required** for all Google Sheets/Docs/Drive access and
    is gitignored — it must be copied to the server manually (not via git). The service
    account also needs write access to the target spreadsheet + Drive folder.
-3. **`import settings`** in `image_generator.py` resolves to the **root** `settings.py`
+2. **`import settings`** in `image_generator.py` resolves to the **root** `settings.py`
    (project root is on `sys.path` when the scheduler runs from the project dir).
-4. Keep this project **DB-free**. If a future task needs the jg_agents DB, it belongs in
+3. Keep this project **DB-free**. If a future task needs the jg_agents DB, it belongs in
    jg_agents, not here.
 
 ## Conventions
