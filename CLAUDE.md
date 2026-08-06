@@ -99,17 +99,17 @@ All site-specific values are env vars (see `.env.example`). The important ones:
 |---|---|---|
 | A | keyword (also the per-keyword worksheet name) | both |
 | B | WordPress target URL (blank = create new post) | publish |
-| C–E | reference/competitor URLs | write |
-| F | **status**: `Write` → `Processing` → `Review` → `Publish` → `Done`/`Failed` | both |
-| G | link to the per-keyword worksheet (auto) | write |
-| H | Google Doc URL (auto) | both |
-| I | sub-keywords | write |
-| J | suggested outline | write |
-| N | tag | publish |
+| C–E | competitor URLs (3) | write |
+| F | **Reference URL** — authoritative source (manufacturer spec page, price list, etc.) scraped for exact product data/specs to ground the article in | write |
+| G | **status**: `Write` → `Processing` → `Review` → `Publish` → `Done`/`Failed` | both |
+| H | link to the per-keyword worksheet (auto) | write |
+| I | Google Doc URL (auto) | both |
+| J | sub-keywords | write |
+| K | suggested outline | write |
+| M | category (WordPress category name, resolved to an ID at publish time) | publish |
+| O | tag | publish |
 
-Columns L (category) and M (job role) are no longer read by `publish_articles.py` — they were
-JobsGo-specific (WP categories + the `nganh_nghe_chuc_vu_lien_quan` ACF field) and don't apply
-to this site's content.
+Column L is an unused gap between the outline columns and M/N.
 
 Flow: set a row to `Write` → `write_articles_task` produces the article + Google Doc and
 flips it to `Review` → a human reviews the Doc → set it to `Publish` → `publish_article_task`

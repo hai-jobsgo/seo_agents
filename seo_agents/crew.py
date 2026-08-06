@@ -83,12 +83,6 @@ class ContentAnalyzerCrew:
         )
     
     @task
-    def compare_improve_outline_task(self) -> Task:
-        return Task(
-            config=self.tasks_config['compare_improve_outline_task'],
-        )
-    
-    @task
     def generate_outline_task(self) -> Task:
         return Task(
             config=self.tasks_config['generate_outline_task'],
@@ -153,15 +147,6 @@ class ContentAnalyzerCrew:
             verbose=True
         )
     
-    
-    def outline_improvement_crew(self) -> Crew:
-        """Crew for refining the outline using competitive analysis"""
-        return Crew(
-            agents=[self.content_outline_researcher()],
-            tasks=[self.compare_improve_outline_task()],
-            process=Process.sequential,
-            verbose=True
-        )
     
     def outline_generation_crew(self) -> Crew:
         """Crew for refining the outline using competitive analysis"""

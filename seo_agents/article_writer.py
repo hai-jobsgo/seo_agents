@@ -11,12 +11,14 @@ try:
     from .doc_generator import DocGenerator
     from .parsers.parsers import create_parser
     from .image_generator import ImageGenerator
+    from .utils import limit_words
 except ImportError:
     # Fall back to absolute imports when running as a script
     from seo_agents.crew import ContentAnalyzerCrew
     from seo_agents.doc_generator import DocGenerator
     from seo_agents.parsers.parsers import create_parser
     from seo_agents.image_generator import ImageGenerator
+    from seo_agents.utils import limit_words
 
 # Base directory
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -42,7 +44,7 @@ class ArticleWriter:
         # self.improved_article = None
         # self.article_with_images = None
     
-    async def write_article(self, ws, keyword, urls, sub_keywords='', suggested_outline=''):
+    async def write_article(self, ws, keyword, urls, sub_keywords='', suggested_outline='', reference_url=''):
         """
         Run the URL analyzer crew.
         """
@@ -91,12 +93,13 @@ class ArticleWriter:
             'image_prompts': 'F15',
             'article_v3': 'B16',
             'article_v4': 'B17',
-            'article_v5': 'B18'
+            'article_v5': 'B18',
+            'reference_content': 'B19'
         }
-        
+
         # Get all values in one API call
         cell_values = ws.batch_get([range_name for range_name in cell_ranges.values()])
-        
+
         # Extract values from the returned data
         improved_outline = cell_values[0][0][0] if cell_values[0] and cell_values[0][0] else None
         optimized_title = cell_values[1][0][0] if cell_values[1] and cell_values[1][0] else None
@@ -107,6 +110,27 @@ class ArticleWriter:
         article_v2 = cell_values[6][0][0] if cell_values[6] and cell_values[6][0] else None
         image_prompts = cell_values[7][0][0] if cell_values[7] and cell_values[7][0] else None
         article_v3 = cell_values[8][0][0] if cell_values[8] and cell_values[8][0] else None
+        reference_content = cell_values[11][0][0] if cell_values[11] and cell_values[11][0] else None
+
+        if reference_content is None:
+            # Not cached yet - scrape the Reference URL (authoritative source for exact
+            # product specs/data) once and cache the result for subsequent runs. Cache a
+            # non-empty sentinel even when there's nothing to scrape, since gspread reads
+            # an actually-blank cell back as falsy and we'd otherwise re-scrape every run.
+            scraped = ''
+            if reference_url:
+                try:
+                    ref_parser = create_parser(reference_url)
+                    ref_parser.parse()
+                    scraped = limit_words(ref_parser.article_content or '', 1500)
+                except Exception as ex:
+                    print('[write_articles] Error parsing reference URL:', ex)
+            reference_content = scraped or 'N/A'
+            ws.batch_update([
+                {'range': 'B19', 'values': [[reference_content]]}
+            ])
+            time.sleep(1)  # Add a small delay to avoid API rate limits
+        reference_content = '' if reference_content == 'N/A' else reference_content
 
         if not improved_outline:
             # Check if we have a suggested_outline to follow
@@ -119,24 +143,21 @@ class ArticleWriter:
                     "competitor_1_outline": outlines[1],
                     "competitor_2_outline": outlines[2],
                     "competitor_3_outline": outlines[3],
+                    "reference_content": reference_content,
                     "word_count_guidance": word_count_guidance
                 }
                 crew = ContentAnalyzerCrew().outline_following_crew()
             else:
+                print('[write_articles] Generating new outline')
                 inputs = {
                     "keyword": keyword,
                     "competitor_1_outline": outlines[1],
                     "competitor_2_outline": outlines[2],
                     "competitor_3_outline": outlines[3],
+                    "reference_content": reference_content,
                     "word_count_guidance": word_count_guidance
                 }
-                if outlines[0]:
-                    print('[write_articles] Improve existing outline')
-                    inputs["our_outline"] = outlines[0]
-                    crew = ContentAnalyzerCrew().outline_improvement_crew()
-                else:
-                    print('[write_articles] Generating new outline')
-                    crew = ContentAnalyzerCrew().outline_generation_crew()
+                crew = ContentAnalyzerCrew().outline_generation_crew()
 
             result = await crew.kickoff_async(inputs=inputs)
             improved_outline = result.raw
@@ -186,17 +207,6 @@ class ArticleWriter:
 
         if not article_v1:
             print('Writing Article')
-            original_article = ''
-            # Check if we have the original article from our own site (natcenter.vn)
-            # Ignore original article if we have a suggested outline
-            if urls[0] and 'natcenter.vn' in urls[0] and outlines[0] and not suggested_outline:
-                parser = create_parser(urls[0])
-                parser.parse()
-                original_article = parser.article_content
-                if original_article:
-                    print('original_article length: ', len(original_article))
-
-            
             writer = ContentAnalyzerCrew().seo_writer_crew()
             inputs = {
                 "keyword": keyword,
@@ -204,7 +214,6 @@ class ArticleWriter:
                 "optimized_title": optimized_title,
                 "optimized_description": optimized_description,
                 "optimized_h1": optimized_h1,
-                "original_article": original_article,
                 "extra_request": sub_keywords,
                 "word_count_guidance": word_count_guidance,
                 "current_month": current_month,

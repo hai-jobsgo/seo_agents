@@ -43,99 +43,6 @@ extract_outline_task:
     The outline should be detailed enough that a writer can understand how to approach each section without seeing the original article.
   agent: content_analyzer
   
-compare_improve_outline_task:
-  description: >
-    Analyze and enhance our existing outline against top 3 competitor outlines for the target keyword,
-    with the specific goal of improving SEO ranking while maintaining our NATCenter (auto parts / tires / car care) perspective.
-    
-    ANALYSIS PHASE:
-    * Systematically compare our outline with each competitor outline, section by section
-    * Identify valuable content sections, subsections, and approaches to incorporate
-    * Detect gaps in our current outline that should be addressed
-    * Evaluate heading hierarchy, structure, and information completeness
-    * Assess the existing inline notes from all outlines for valuable guidance
-    
-    ENHANCEMENT PHASE:
-    * PRIORITIZE MAINTAINING OUR EXISTING OUTLINE STRUCTURE whenever possible
-    * APPEND new sections or subsections to our existing structure rather than reorganizing
-    * Only replace our outline entirely if a competitor outline is significantly superior than ours
-    * Preserve our outline's existing core strengths and unique perspective
-    * Transfer and adapt relevant inline notes from the source outlines
-    * Ensure comprehensive coverage of automotive themes relevant to car owners and drivers (parts selection, maintenance, safety)
-    * REMOVE any prominent promotion of competitor brands - only NATCenter is allowed as a promoted brand reference
-    
-    NOTE HANDLING GUIDELINES:
-    * When incorporating a section from any outline (ours or competitors):
-      - Transfer any existing [NOTES: ] from that outline directly when they provide valuable guidance
-      - Adapt notes as needed to maintain our NATCenter perspective
-      - Consolidate overlapping notes from multiple sources when appropriate
-      - Ensure notes provide clear writing guidance for complex or unique sections
-    * Maintain consistent [NOTES: ] formatting throughout the combined outline
-    * Always include a FAQ section at the end of the outline with 2-4 relevant questions
-
-    IMPORTANT:
-    * The entire output outline, including ALL headings, sections, notes, and meta information must be written in Vietnamese.
-    * The outline MUST use a numbering system with main sections numbered as 1, 2, 3... and subsections as 1.1, 1.2, 1.3... etc.
-    * AVOID creating main sections (e.g., ## 1. Section) that contain only a single subsection (e.g., ### 1.1. Subsection). If a topic for a main section seems to only have one sub-point, consider if that sub-point can be elevated to a main section itself, or if its content can be merged into a related, broader section.
-    * The FAQ section itself should NOT have a section number, and its questions should use a separate numbering (1., 2., 3., etc.)
-    * From H2 downward (H2, H3, H4, ...), write headings in normal Vietnamese sentence case - capitalize only the
-      first letter of the heading and any proper nouns. Do NOT capitalize every word (no Title Case).
-    * Do not embed a specific calendar year into any heading or note unless that section is inherently time-sensitive
-      (pricing, rankings, market data, current events); for such sections, note that the writer should use the
-      actual current month/year at writing time rather than a fixed or guessed year.
-    * Minimize reorganization of our existing outline - focus on APPENDING new content rather than restructuring
-    * Only completely replace our outline if a competitor's outline is substantially better in covering search intent
-    * LENGTH GUIDANCE: {word_count_guidance} Size each section's [NOTES: ] with an approximate word-count budget so the
-      SUM of all section budgets lands close to the stated average (not the ceiling) - do NOT pad the outline with
-      extra sections/subsections just to make the article longer than competitors.
-
-    Keyword: {keyword}
-
-    Our current outline:  
-    {our_outline}  
-
-    Competitor 1 outline:  
-    {competitor_1_outline}  
-
-    Competitor 2 outline:  
-    {competitor_2_outline}  
-
-    Competitor 3 outline:  
-    {competitor_3_outline}  
-
-  expected_output: >
-    A comprehensive, enhanced outline in Vietnamese in markdown format that integrates the best elements from all source outlines, preferably by APPENDING to our existing outline structure rather than reorganizing it.
-    
-    Example format:
-    # Đề Cương SEO Nâng Cao: [Từ Khóa Chính]
-
-    ## 1. [Giữ nguyên tiêu đề phần 1 hiện tại, viết thường trừ chữ cái đầu] [GHI CHÚ: {ghi chú được chuyển từ đề cương nguồn nếu có}]
-    ### 1.1. [Giữ nguyên tiêu đề phụ hiện tại]
-    ### 1.2. [Giữ nguyên tiêu đề phụ hiện tại]
-    ### 1.3. [Tiêu đề phụ mới được thêm vào] [GHI CHÚ: {ghi chú mới}]
-
-    ## 2. [Giữ nguyên tiêu đề phần 2 hiện tại] [GHI CHÚ: {ghi chú được chuyển từ đề cương nguồn nếu có}]
-    ### 2.1. [Giữ nguyên tiêu đề phụ hiện tại]
-    ### 2.2. [Tiêu đề phụ mới được thêm vào] [GHI CHÚ: {ghi chú mới}]
-
-    ## 3. [Phần mới được thêm vào] [GHI CHÚ: {ghi chú mới}]
-
-    [Các phần bổ sung khác nếu phù hợp...]
-
-    ## Câu hỏi thường gặp (FAQ)
-    ### 1. [Câu hỏi 1]
-    ### 2. [Câu hỏi 2]
-    ### 3. [Câu hỏi 3]
-
-    All headings from H2 downward must use normal Vietnamese sentence case (capitalize only the first letter and
-    proper nouns, not every word). The enhanced outline should prioritize keeping our existing outline structure while APPENDING new valuable sections or subsections
-    identified from competitor outlines. Only in cases where a competitor's outline is substantially superior in addressing search intent 
-    should our outline be completely replaced. The resulting outline should be comprehensive, well-structured, and contain all necessary
-    guidance for content creation. All sections must follow the numerical hierarchy (1, 2, 3 for main sections and 1.1, 1.2, etc. 
-    for subsections), except for the FAQ section which should use a separate numbering format (1., 2., 3.) for questions and should not 
-    have a section number itself.
-  agent: content_outline_researcher
-
 follow_outline_task:
   description: >
     Enhance the suggested outline by gathering detailed notes and guidance for each section from competitor outlines or our outline,
@@ -175,13 +82,18 @@ follow_outline_task:
       SUM lands close to the stated average (not the ceiling) - do NOT inflate notes just to make the final article
       longer than competitors.
 
-    IMPORTANT RESTRICTIONS:
-    * DO NOT change the suggested outline structure in any way
-    * DO NOT add new sections or subsections
-    * DO NOT remove or merge existing sections
-    * DO NOT change heading text or numbering
-    * ONLY enhance by adding/improving inline notes [GHI CHÚ: ]
-    * REMOVE any prominent promotion of competitor brands - only NATCenter is allowed as a promoted brand reference
+    REFERENCE SOURCE DATA (authoritative - separate from the competitor outlines above):
+    * The block below, if present, is raw content scraped from a trusted technical source (manufacturer spec page,
+      official documentation, price list, etc.) - NOT another competitor to structurally compare against.
+    * Whenever a section's topic is covered by this source, pull the exact figures/specs/prices into that section's
+      [GHI CHÚ: ] note (e.g. "GHI CHÚ: Dùng đúng thông số từ nguồn tham khảo: áp suất lốp tiêu chuẩn 32 psi") - do NOT
+      round, estimate, or alter the numbers, and do NOT invent data that isn't in this source.
+    * If this source conflicts with something stated in a competitor outline, trust this source for factual/spec
+      accuracy - competitor outlines only inform structure/SEO coverage, not factual correctness.
+    * If the block below is empty, there is no reference source for this keyword - proceed normally without it.
+
+    Reference source content:
+    {reference_content}
 
     Keyword: {keyword}
 
@@ -280,6 +192,20 @@ generate_outline_task:
       SUM of all section budgets lands close to the stated average (not the ceiling) - do NOT pad the outline with
       extra sections/subsections just to make the article longer than competitors.
 
+    REFERENCE SOURCE DATA (authoritative - separate from the competitor outlines below):
+    * The block below, if present, is raw content scraped from a trusted technical source (manufacturer spec page,
+      official documentation, price list, etc.) - NOT a fourth competitor to structurally compare against.
+    * Whenever a section's topic is covered by this source, pull the exact figures/specs/prices into that section's
+      [NOTES: ] with an instruction to use them verbatim (e.g. "[NOTES: Dùng đúng thông số từ nguồn tham khảo: áp
+      suất lốp tiêu chuẩn 32 psi]") - do NOT round, estimate, or alter the numbers, and do NOT invent data that
+      isn't in this source.
+    * If this source conflicts with something stated in a competitor outline, trust this source for factual/spec
+      accuracy - competitor outlines only inform structure/SEO coverage, not factual correctness.
+    * If the block below is empty, there is no reference source for this keyword - proceed normally without it.
+
+    Reference source content:
+    {reference_content}
+
     Keyword: {keyword}
 
     Competitor 1 outline:
@@ -297,11 +223,11 @@ generate_outline_task:
     Example format in Vietnamese:
     # Đề Cương Bài Viết Tối Ưu SEO: [Từ Khóa Chính] [Số từ mục tiêu: XXXX-XXXX từ]
 
-    ## 1. Giới thiệu [GHI CHÚ: Mở đầu với thống kê thuyết phục về nhu cầu thị trường việc làm; trả lời trực tiếp câu hỏi "X là gì" trong đoạn đầu tiên để nhắm đến đoạn trích nổi bật; 150-200 từ]
+    ## 1. Giới thiệu [GHI CHÚ: Mở đầu với thống kê thuyết phục về nhu cầu sử dụng/bảo dưỡng phụ tùng, lốp xe ô tô; trả lời trực tiếp câu hỏi "X là gì" trong đoạn đầu tiên để nhắm đến đoạn trích nổi bật; 150-200 từ]
 
-    ## 2. [Phần chính 1] [GHI CHÚ: Bao gồm bảng so sánh thể hiện các lựa chọn X và Y cho người tìm việc; kết hợp số liệu thống kê từ (nguồn cụ thể nếu có); 400-500 từ]
+    ## 2. [Phần chính 1] [GHI CHÚ: Bao gồm bảng so sánh thể hiện các lựa chọn X và Y cho chủ xe/người lái xe; kết hợp số liệu thống kê từ (nguồn cụ thể nếu có); 400-500 từ]
     ### 2.1. [Tiểu mục A] [GHI CHÚ: Tạo định dạng danh sách kiểm tra có thể thực hiện được; cơ hội cho đồ họa tùy chỉnh thể hiện quy trình]
-    ### 2.2. [Tiểu mục B] [GHI CHÚ: Bao gồm góc nhìn chuyên gia từ nhà quản lý tuyển dụng; tập trung vào giải quyết hiểu lầm phổ biến về X]
+    ### 2.2. [Tiểu mục B] [GHI CHÚ: Bao gồm góc nhìn chuyên gia từ kỹ thuật viên/gara ô tô; tập trung vào giải quyết hiểu lầm phổ biến về X]
 
     ## 3. [Phần chính 2] [GHI CHÚ: Cấu trúc như hướng dẫn từng bước; kết hợp H2 với từ khóa khớp chính xác cho truy vấn tìm kiếm "Làm thế nào để [từ khóa]"; 600-700 từ]
     ### 3.1. [Tiểu mục A]
@@ -309,7 +235,7 @@ generate_outline_task:
 
     [Các phần bổ sung khác nếu phù hợp...]
 
-    ## 4. Kết luận [GHI CHÚ: Tóm tắt các điểm chính; bao gồm lời kêu gọi hành động cụ thể cho người tìm việc và nhà tuyển dụng; 3-4 câu ngắn gọn]
+    ## 4. Kết luận [GHI CHÚ: Tóm tắt các điểm chính; bao gồm lời kêu gọi hành động cụ thể cho chủ xe khi chọn mua hoặc bảo dưỡng; 3-4 câu ngắn gọn]
 
     ## Câu hỏi thường gặp (FAQ)
     ### 1. [Câu hỏi 1]
@@ -414,13 +340,8 @@ write_article_task:
     * If an extra request would reduce the quality or effectiveness of the article, ignore it or address it only partially.
     
     CONTENT DEVELOPMENT APPROACH:
-    * If an original article is provided:
-      - Use it as a reference, selectively incorporating high-quality, relevant content
-      - Significantly improve upon weak sections identified in the outline
-      - Update any outdated information with current data and insights
-    * If no original article is provided:
-      - Develop the article entirely from the outline, following all section guidance
-    
+    * Develop the article entirely from the outline, following all section guidance.
+
     WRITING STYLE REQUIREMENTS:
     * Keep paragraphs SHORT: 2-4 sentences (roughly 2-4 lines) per paragraph. Break longer explanations into
       multiple short paragraphs rather than one long block - this is a hard readability requirement, not a suggestion.
@@ -506,9 +427,6 @@ write_article_task:
     Suggested H1: {optimized_h1}
     Extra Request (optional): {extra_request}
     Current Month/Year (for time-sensitive mentions only): {current_month}/{current_year}
-
-    Original Article (optional):
-    {original_article}
 
   expected_output: >
     A publication-ready article in Vietnamese in Markdown format that fully implements the provided outline structure, guidance notes, and any extra requests (if they do not reduce article quality).
