@@ -2,7 +2,7 @@
 Fabric deployment for the standalone seo_agents service.
 
 Assumes an SSH host alias `dev47` in ~/.ssh/config and that the repo is already
-cloned at /var/www/seo_agents on the server (see DEPLOY.md for first-time setup).
+cloned at /var/www/seo_agents_nat on the server (see DEPLOY.md for first-time setup).
 
     fab deploy        # git push + pull on dev47 + restart the service
     fab live          # tail the task log on dev47
@@ -12,8 +12,8 @@ cloned at /var/www/seo_agents on the server (see DEPLOY.md for first-time setup)
 from fabric import Connection, task
 
 HOST = "dev47"
-REMOTE_DIR = "/var/www/seo_agents"
-SERVICE = "seo_agents"
+REMOTE_DIR = "/var/www/seo_agents_nat"
+SERVICE = "seo_agents_nat"
 
 
 @task

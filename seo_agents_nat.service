@@ -1,0 +1,17 @@
+[Unit]
+Description=SEO Agents NAT (standalone) — write + publish articles scheduler
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/seo_agents_nat
+ExecStart=/var/www/seo_agents_nat/.venv/bin/python /var/www/seo_agents_nat/scheduler.py --config crons.yaml
+Restart=always
+RestartSec=10
+# Logs go to the systemd journal (view with: journalctl --user -u seo_agents_nat -f).
+# The tasks also write their own file at /var/www/seo_agents_nat/logs/tasks.log.
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
