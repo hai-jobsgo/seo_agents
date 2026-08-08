@@ -28,6 +28,11 @@ SCOPES = [
     'https://www.googleapis.com/auth/drive.readonly'
 ]
 
+# Emitted inline (in Doc order) at each image position by _extract_text_with_formatting,
+# then swapped for the uploaded WordPress image by _replace_image_placeholders. An HTML
+# comment survives the BeautifulSoup round-trip in _modify_html unchanged.
+IMAGE_PLACEHOLDER = '<!--IMAGE_PLACEHOLDER-->'
+
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 CREDENTIALS_PATH = os.path.join(BASE_DIR, 'env', 'dashboard-gcloud.json')
 MEDIA_DIR = os.path.join(BASE_DIR, 'data', 'output', 'media')
@@ -125,7 +130,8 @@ class GoogleDocsToWordPress:
                 
                 text_parts = []
                 paragraph_text_index = 0
-                
+                para_image_ids = []  # inline images in this paragraph, in Doc order
+
                 for text_element in para.get('elements', []):
                     if 'textRun' in text_element:
                         text_content = text_element.get('textRun', {}).get('content', '')
@@ -150,6 +156,7 @@ class GoogleDocsToWordPress:
                         
                     elif 'inlineObjectElement' in text_element:
                         image_id = text_element['inlineObjectElement']['inlineObjectId']
+                        para_image_ids.append(image_id)
                         self.image_positions[image_id] = {
                             'element_index': current_element_index,
                             'text_position': current_text_index + paragraph_text_index,
@@ -204,10 +211,16 @@ class GoogleDocsToWordPress:
                         if not (heading_tag == 'h1' or (p_count == 1 and not heading_tag)):
                             html_parts.append(html_element)
 
+                    # Image(s) embedded inside this text paragraph — place them right after it.
+                    for _ in para_image_ids:
+                        html_parts.append(IMAGE_PLACEHOLDER)
+
                     current_element_index += 1
 
-                elif any('inlineObjectElement' in elem for elem in para.get('elements', [])):
-                    html_parts.append("<p></p>")
+                elif para_image_ids:
+                    # Standalone image paragraph(s): emit a placeholder for each, in order.
+                    for _ in para_image_ids:
+                        html_parts.append(IMAGE_PLACEHOLDER)
                     current_element_index += 1
 
             elif 'table' in element:
@@ -294,129 +307,80 @@ class GoogleDocsToWordPress:
         
         return ''.join(formatted_parts)
     
-    def _replace_image_placeholders(self, html_content, images, main_keyword):
-        """Process images and replace placeholders in HTML content.
-        
-        Args:
-            html_content: HTML content with image placeholders
-            images: List of image objects from Google Docs
-            main_keyword: Main keyword for SEO
-            
-        Returns:
-            Tuple of (HTML content with WordPress image tags, featured image ID or None)
-        """
-        # Convert HTML to BeautifulSoup
-        soup = BeautifulSoup(html_content, 'html.parser')
-        
-        # Convert soup to HTML elements
-        html_elements = [str(element) for element in soup.contents]
-        
-        # Result will hold the final content
-        result_elements = []
-        
-        # Store the featured image ID (first image)
-        featured_image_id = None
-        
-        # Counter for used images
-        image_index = 0
-        
-        # Flag to track if we've passed an h2 tag
-        after_h2 = False
-        
-        # Iterate through HTML elements
-        for element in html_elements:
-            # Check if this is an h2 closing tag
-            if '</h2>' in element:
-                after_h2 = True
-                result_elements.append(element)
-                continue
-            
-            # Check if the current element contains an italic text (whether directly or inside paragraph) and we're after an h2
-            if after_h2 and '<i>' in element:
-                # Insert an image before this paragraph if we have images left
-                if image_index < len(images):
-                    image = images[image_index]
-                    
-                    # Create meaningful alt text using the main keyword if available
-                    alt_text = image.get('alt', '')
-                    if not alt_text:
-                        title = image.get('title', '')
-                        alt_text = f"{main_keyword} - {title}" if title else f"{main_keyword} - image {image_index + 1}"
-                    
-                    # Make sure alt text is clean and SEO-friendly
-                    alt_text = alt_text.replace('"', '&quot;').strip()
-                    
-                    try:
-                        # Download and optimize image
-                        local_path, filename = self._download_and_optimize_image(image['url'], alt_text)
-                        
-                        if local_path:
-                            # Upload to WordPress
-                            media_data = self._upload_image_to_wordpress(local_path, filename, alt_text)
-                            
-                            if media_data:
-                                # Set the first image as featured image if not already set
-                                if featured_image_id is None:
-                                    featured_image_id = media_data["id"]
-                                    logger.info(f"Set image {media_data['id']} as featured image")
-                                
-                                # Create image HTML with proper WordPress Gutenberg block format
-                                img_html = f'<!-- wp:image {{"id":{media_data["id"]},"sizeSlug":"large","linkDestination":"none"}} -->\n'
-                                img_html += f'<figure class="wp-block-image size-large">'
-                                img_html += f'<img src="{media_data["source_url"]}" alt="{alt_text}" '
-                                img_html += f'class="wp-image-{media_data["id"]}"/>'
-                                img_html += f'</figure>\n<!-- /wp:image -->'
-                                
-                                # Insert the image before the italic paragraph
-                                result_elements.append(img_html)
-                                logger.debug(f"Inserted image {image_index + 1} before italic text")
-                                
-                                # Clean up local file to avoid disk space issues
-                                try:
-                                    import os
-                                    os.remove(local_path)
-                                    logger.debug(f"Removed temporary file: {local_path}")
-                                except Exception as e:
-                                    logger.warning(f"Failed to remove temporary file {local_path}: {str(e)}")
-                            else:
-                                logger.error(f"Failed to upload image {image['url']} to WordPress")
-                        else:
-                            logger.error(f"Failed to download or optimize image {image['url']}")
-                    
-                    except Exception as e:
-                        logger.error(f"Error processing image {image_index}: {str(e)}")
-                    
-                    # Increment the image index regardless of success/failure to avoid getting stuck
-                    image_index += 1
-            
-            # Add the current HTML element
-            result_elements.append(element)
-        
-        # Add any remaining images at the end
-        for i in range(image_index, len(images)):
-            image = images[i]
-            alt_text = image.get('alt', '') or f"{main_keyword} - {image.get('title', '') or 'image'}"          
+    def _build_wp_image_html(self, image, index, main_keyword):
+        """Download, optimize and upload one Google Docs image to WordPress, returning
+        (gutenberg_image_html, media_id). Returns ('', None) on any failure so the caller
+        can simply skip it. The temporary local file is always cleaned up."""
+        alt_text = image.get('alt', '')
+        if not alt_text:
+            title = image.get('title', '')
+            alt_text = f"{main_keyword} - {title}" if title else f"{main_keyword} - image {index + 1}"
+        alt_text = alt_text.replace('"', '&quot;').strip()
+
+        try:
             local_path, filename = self._download_and_optimize_image(image['url'], alt_text)
             if not local_path:
-                continue
-                
+                logger.error(f"Failed to download or optimize image {image['url']}")
+                return '', None
+
             media_data = self._upload_image_to_wordpress(local_path, filename, alt_text)
-            
+            try:
+                os.remove(local_path)
+            except OSError as e:
+                logger.warning(f"Failed to remove temporary file {local_path}: {e}")
+
             if not media_data:
-                continue
-            
-            # Set the first image as featured image if we don't have one yet
-            if featured_image_id is None:
-                featured_image_id = media_data["id"]
-                
-            img_html = f'<!-- wp:image {{"id":{media_data["id"]},"sizeSlug":"large"}} -->\n'
+                logger.error(f"Failed to upload image {image['url']} to WordPress")
+                return '', None
+
+            img_html = f'<!-- wp:image {{"id":{media_data["id"]},"sizeSlug":"large","linkDestination":"none"}} -->\n'
             img_html += f'<figure class="wp-block-image size-large">'
             img_html += f'<img src="{media_data["source_url"]}" alt="{alt_text}" '
             img_html += f'class="wp-image-{media_data["id"]}"/>'
             img_html += f'</figure>\n<!-- /wp:image -->'
-            
-            result_elements.append(img_html)
-        
+            return img_html, media_data["id"]
+        except Exception as e:
+            logger.error(f"Error processing image {index}: {e}")
+            return '', None
+
+    def _replace_image_placeholders(self, html_content, images, main_keyword):
+        """Replace each inline placeholder (emitted in Doc order by
+        _extract_text_with_formatting) with its corresponding uploaded WordPress image, so
+        images land at the exact position they occupy in the Doc. Images with no matching
+        placeholder are appended at the end; the first successfully uploaded image becomes
+        the featured image.
+
+        Returns (HTML content with WordPress image blocks, featured image ID or None).
+        """
+        featured_image_id = None
+        image_index = 0
+
+        # Split on the placeholder — the first chunk has no image before it, and each
+        # subsequent chunk is preceded by the next image (in Doc order).
+        parts = html_content.split(IMAGE_PLACEHOLDER)
+        result_elements = [parts[0]]
+
+        for segment in parts[1:]:
+            if image_index < len(images):
+                img_html, media_id = self._build_wp_image_html(
+                    images[image_index], image_index, main_keyword
+                )
+                if img_html:
+                    result_elements.append(img_html)
+                    if featured_image_id is None:
+                        featured_image_id = media_id
+                        logger.info(f"Set image {media_id} as featured image")
+                image_index += 1
+            result_elements.append(segment)
+
+        # Any images beyond the number of placeholders — append at the end.
+        for i in range(image_index, len(images)):
+            img_html, media_id = self._build_wp_image_html(images[i], i, main_keyword)
+            if img_html:
+                result_elements.append(img_html)
+                if featured_image_id is None:
+                    featured_image_id = media_id
+
         return '\n'.join(result_elements), featured_image_id
     
     def _process_table(self, table):
@@ -701,6 +665,39 @@ class GoogleDocsToWordPress:
             logger.error(f"Failed to get post ID from URL {post_url}: {e}")
             return None
 
+    def _get_post_media_ids(self, post_id):
+        """Return the media IDs used by an existing post (inline images + featured image),
+        so they can be cleaned up when the post is overwritten."""
+        try:
+            response = requests.get(
+                f"{self.wp_api_url}/posts/{post_id}",
+                params={'_fields': 'content,featured_media'},
+                headers=self.auth_header
+            )
+            response.raise_for_status()
+            data = response.json()
+            ids = {int(m) for m in re.findall(r'wp-image-(\d+)', data.get('content', {}).get('rendered', ''))}
+            featured = data.get('featured_media')
+            if featured:
+                ids.add(int(featured))
+            return ids
+        except (requests.RequestException, ValueError) as e:
+            logger.warning(f"Could not fetch existing media for post {post_id}: {e}")
+            return set()
+
+    def _delete_media(self, media_ids):
+        """Permanently delete the given WordPress media items (used to purge the previous
+        version's images after an overwrite)."""
+        for mid in media_ids:
+            try:
+                requests.delete(
+                    f"{self.wp_api_url}/media/{mid}",
+                    params={'force': 'true'},
+                    headers=self.auth_header
+                )
+                logger.info(f"Deleted old media {mid}")
+            except requests.RequestException as e:
+                logger.warning(f"Failed to delete old media {mid}: {e}")
 
     def _modify_html(self, html_content, main_keyword):
         soup = BeautifulSoup(html_content, "html.parser")
@@ -718,10 +715,14 @@ class GoogleDocsToWordPress:
 
         return str(soup)
         
-    def _resolve_category_id(self, category_name, fallback_slug='tin-tuc'):
-        """Look up a WordPress category ID by name, falling back to `fallback_slug` if
-        blank or not found. natcenter.vn has no ACF/Yoast REST exposure, so unlike SEO
-        meta, categories are a real, writable wp/v2 field — worth getting right."""
+    def _resolve_category_id(self, category, fallback_slug='tin-tuc'):
+        """Look up a WordPress category ID from the sheet's Category cell, falling back to
+        `fallback_slug` if blank or not found. natcenter.vn has no ACF/Yoast REST exposure,
+        so unlike SEO meta, categories are a real, writable wp/v2 field — worth getting right.
+
+        The cell may hold either a plain category name or a full category URL
+        (e.g. https://natcenter.vn/category/tu-van-lop-xe-o-to/); a URL is resolved by its
+        slug, a name by search."""
         def _lookup(params):
             try:
                 response = requests.get(f"{self.wp_api_url}/categories", params=params, headers=self.auth_header)
@@ -732,11 +733,18 @@ class GoogleDocsToWordPress:
                 logger.warning(f"Failed to look up category {params}: {e}")
                 return None
 
-        if category_name and category_name.strip():
-            category_id = _lookup({'search': category_name.strip()})
+        if category and category.strip():
+            category = category.strip()
+            if category.startswith(('http://', 'https://')):
+                # Extract the slug — the last non-empty path segment of the category URL.
+                segments = [s for s in urlparse(category).path.split('/') if s]
+                slug = segments[-1] if segments else ''
+                category_id = _lookup({'slug': slug}) if slug else None
+            else:
+                category_id = _lookup({'search': category})
             if category_id:
                 return category_id
-            logger.warning(f"Category '{category_name}' not found — falling back to '{fallback_slug}'")
+            logger.warning(f"Category '{category}' not found — falling back to '{fallback_slug}'")
 
         return _lookup({'slug': fallback_slug})
 
@@ -827,9 +835,11 @@ class GoogleDocsToWordPress:
             post_id = None
             if existing_post_url:
                 post_id = self._get_post_id_from_url(existing_post_url)
-            
-            
-            
+
+            # When overwriting, remember the previous version's media so it can be purged
+            # after a successful update (the new images were just uploaded with fresh IDs).
+            old_media_ids = self._get_post_media_ids(post_id) if post_id else set()
+
             if post_id:
                 response = requests.put(
                     f"{self.wp_api_url}/posts/{post_id}",
@@ -844,9 +854,12 @@ class GoogleDocsToWordPress:
                     headers=self.auth_header
                 )
                 logger.info(f"Created new post")
-            
+
             response.raise_for_status()
             post_data = response.json()
+
+            if old_media_ids:
+                self._delete_media(old_media_ids)
                        
             return {
                 'id': post_data['id'],

@@ -88,10 +88,13 @@ class PublishCommand:
         
         return keywords
 
-    def publish_to_wordpress(self, doc_url, keyword, tag, category):
-        """Publish Google Doc content to WordPress as a new post."""
+    def publish_to_wordpress(self, doc_url, keyword, tag, category, existing_post_url=None):
+        """Publish Google Doc content to WordPress. If `existing_post_url` is given (the
+        URL column already holds a link), overwrite that post in place; otherwise create
+        a new post."""
         try:
-            print(f"[publish_articles] Publishing document {doc_url}")
+            action = f"updating {existing_post_url}" if existing_post_url else "as new post"
+            print(f"[publish_articles] Publishing document {doc_url} ({action})")
 
             # Extract keywords/tags from the URL or use defaults
             keywords = self.extract_keywords_from_title(keyword, keyword)
@@ -106,7 +109,7 @@ class PublishCommand:
                 tag=tag,
                 category=category,
                 status='publish',  # Always publish
-                existing_post_url=None
+                existing_post_url=existing_post_url
             )
             url = result['url']
             print(f"[publish_articles] Published successfully: {url}")
@@ -138,8 +141,9 @@ class PublishCommand:
                 keyword = row[0]
                 status = row[6]
                 doc_url = row[8] if len(row) > 8 else None
-                category = row[12] if len(row) > 12 else None
-                tag = row[14] if len(row) > 14 else None
+                category = row[9] if len(row) > 9 else None   # J: category (name or URL)
+                existing_url = row[10].strip() if len(row) > 10 and row[10] else None  # K: republish target
+                tag = row[14] if len(row) > 14 else None      # O: optional, absent on live sheet
 
                 if not keyword:  # No more keywords
                     print('[publish_articles] no more keyword')
@@ -160,8 +164,16 @@ class PublishCommand:
                 ws1.update_cell(row_index, 7, "Processing")
                 time.sleep(1)  # Avoid API rate limits
 
-                # Publish to WordPress
-                success, result = self.publish_to_wordpress(doc_url, keyword, tag, category)
+                # Publish to WordPress — overwrite the existing post if column K already
+                # holds a URL, otherwise create a new post.
+                success, result = self.publish_to_wordpress(
+                    doc_url, keyword, tag, category, existing_post_url=existing_url
+                )
+
+                # On success, write the published post URL into column K (11)
+                if success:
+                    ws1.update_cell(row_index, 11, result)
+                    time.sleep(1)  # Avoid API rate limits
 
                 # Update status based on result
                 new_status = "Done" if success else "Failed"
